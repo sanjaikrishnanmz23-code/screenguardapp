@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>ScreenGuard – Alerts</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <script src="theme.js"></script>
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{--teal:#00d4b4;--indigo:#5c6ef8;--coral:#ff6b6b;--amber:#f59e0b;--green:#10b981;--bg:#0b0f1e;--card:#131929;--border:rgba(255,255,255,0.08);--text:#e8eaf6;--muted:#8892b0}
+    [data-theme="light"]{
+      --bg:#f0f4ff;--card:#ffffff;--card2:#f8faff;--border:rgba(0,0,0,0.08);
+      --text:#1a1f3c;--muted:#6b7280;
+    }
+    body { transition: background 0.3s, color 0.3s; }
+    body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex}
+    .sidebar{width:240px;flex-shrink:0;background:var(--card);border-right:1px solid var(--border);display:flex;flex-direction:column;padding:28px 20px;position:fixed;top:0;left:0;bottom:0;z-index:100}
+    .brand{display:flex;align-items:center;gap:10px;margin-bottom:36px;padding:0 8px}
+    .brand-icon{width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,var(--teal),var(--indigo));display:flex;align-items:center;justify-content:center;font-size:16px}
+    .brand-name{font-family:'Syne',sans-serif;font-size:18px;font-weight:800}
+    .nav{display:flex;flex-direction:column;gap:4px;flex:1}
+    .nav-item{display:flex;align-items:center;gap:12px;padding:11px 14px;border-radius:10px;color:var(--muted);font-size:14px;font-weight:500;cursor:pointer;text-decoration:none;transition:all 0.2s}
+    .nav-item:hover{background:rgba(255,255,255,0.06);color:var(--text)}
+    .nav-item.active{background:rgba(92,110,248,0.18);color:var(--indigo)}
+    .nav-icon{font-size:17px;width:22px;text-align:center}
+    .nav-divider{height:1px;background:var(--border);margin:12px 0}
+    .sidebar-bottom{padding:0 8px}
+    .user-card{display:flex;align-items:center;gap:10px;padding:12px;border-radius:12px;background:rgba(255,255,255,0.04);border:1px solid var(--border)}
+    .avatar{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--indigo),var(--teal));display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px}
+    .user-info .name{font-size:13px;font-weight:600}
+    .user-info .role{font-size:11px;color:var(--muted)}
+    .main{margin-left:240px;flex:1;padding:32px}
+    .page-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:28px}
+    .page-header h1{font-family:'Syne',sans-serif;font-size:26px;font-weight:800}
+    .btn-sm{padding:9px 16px;border-radius:9px;border:1px solid var(--border);background:rgba(255,255,255,0.05);color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;cursor:pointer;transition:all 0.2s;display:inline-flex;align-items:center;gap:6px}
+    .btn-sm:hover{background:rgba(255,255,255,0.1)}
+    /* Settings panel */
+    .settings-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:28px}
+    .card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:24px}
+    .card-title{font-family:'Syne',sans-serif;font-size:16px;font-weight:700;margin-bottom:18px}
+    /* Toggle */
+    .toggle-row{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid rgba(255,255,255,0.04)}
+    .toggle-row:last-child{border-bottom:none}
+    .tr-info .tr-label{font-size:14px;font-weight:500;margin-bottom:2px}
+    .tr-info .tr-desc{font-size:12px;color:var(--muted)}
+    .toggle{position:relative;width:44px;height:24px;flex-shrink:0}
+    .toggle input{opacity:0;width:0;height:0}
+    .toggle-slider{position:absolute;cursor:pointer;inset:0;background:rgba(255,255,255,0.1);border-radius:24px;transition:.3s}
+    .toggle-slider::before{content:'';position:absolute;height:18px;width:18px;left:3px;bottom:3px;background:#fff;border-radius:50%;transition:.3s}
+    .toggle input:checked+.toggle-slider{background:var(--teal)}
+    .toggle input:checked+.toggle-slider::before{transform:translateX(20px)}
+    /* Alert type buttons */
+    .type-filters{display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap}
+    .type-btn{padding:7px 14px;border-radius:8px;border:1px solid var(--border);background:rgba(255,255,255,0.04);color:var(--muted);font-size:12px;cursor:pointer;transition:all 0.2s}
+    .type-btn.active{border-color:var(--indigo);background:rgba(92,110,248,0.15);color:var(--text)}
+    /* Notif list */
+    .notif-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px 20px;margin-bottom:10px;display:flex;align-items:center;gap:16px;cursor:pointer;transition:all 0.2s;position:relative;overflow:hidden}
+    .notif-card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:4px}
+    .notif-card:hover{background:rgba(255,255,255,0.04);border-color:rgba(255,255,255,0.12)}
+    .notif-card.unread{background:rgba(92,110,248,0.06)}
+    .nc-icon{width:40px;height:40px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+    .nc-body{flex:1}
+    .nc-title{font-size:14px;font-weight:600;margin-bottom:3px}
+    .nc-sub{font-size:12px;color:var(--muted)}
+    .nc-time{font-size:11px;color:var(--muted);flex-shrink:0}
+    .nc-badge{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+    /* type colours */
+    .type-critical .nc-icon{background:rgba(255,107,107,0.15)} .type-critical::before{background:var(--coral)}
+    .type-warning  .nc-icon{background:rgba(245,158,11,0.15)}  .type-warning::before{background:var(--amber)}
+    .type-info     .nc-icon{background:rgba(92,110,248,0.15)}  .type-info::before{background:var(--indigo)}
+    .type-success  .nc-icon{background:rgba(16,185,129,0.15)}  .type-success::before{background:var(--green)}
+    /* live alert banner */
+    .live-alert{background:linear-gradient(135deg,rgba(255,107,107,0.15),rgba(245,158,11,0.1));border:1px solid rgba(255,107,107,0.3);border-radius:14px;padding:16px 20px;margin-bottom:20px;display:flex;align-items:center;gap:12px;animation:flash 2s infinite}
+    @keyframes flash{0%,100%{border-color:rgba(255,107,107,0.3)}50%{border-color:rgba(255,107,107,0.7)}}
+    .live-badge{padding:4px 10px;border-radius:6px;background:var(--coral);color:#fff;font-size:11px;font-weight:700;animation:pulse2 1.5s infinite}
+    @keyframes pulse2{0%,100%{opacity:1}50%{opacity:0.6}}
+    @media(max-width:900px){.sidebar{width:64px;padding:20px 12px}.sidebar .brand-name,.sidebar .nav-item span,.sidebar .user-info{display:none}.main{margin-left:64px;padding:20px}}
+    @media(max-width:700px){.settings-grid{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+<aside class="sidebar">
+  <div class="brand"><div class="brand-icon">⏱</div><div class="brand-name">ScreenGuard</div></div>
+  <nav class="nav">
+    <a class="nav-item " href="dashboard.html"><span class="nav-icon">📊</span><span>Dashboard</span></a>
+    <a class="nav-item " href="apps.html"><span class="nav-icon">📱</span><span>App Usage</span></a>
+    <a class="nav-item " href="limits.html"><span class="nav-icon">⏳</span><span>Time Limits</span></a>
+    <a class="nav-item " href="stats.html"><span class="nav-icon">📈</span><span>Statistics</span></a>
+    <a class="nav-item active" href="notifications.html"><span class="nav-icon">🔔</span><span>Alerts</span></a>
+    <a class="nav-item " href="focus.html"><span class="nav-icon">🎯</span><span>Focus Mode</span></a>
+    <div class="nav-divider"></div>
+    <a class="nav-item " href="about.html"><span class="nav-icon">ℹ️</span><span>About</span></a>
+    <a class="nav-item" href="login.html"><span class="nav-icon">🚪</span><span>Logout</span></a>
+  </nav>
+  <div class="sidebar-bottom">
+    <button class="theme-toggle-btn" onclick="SG.toggleTheme()">☀️ Light Mode</button>
+    <div class="user-card"><div class="avatar">A</div><div class="user-info"><div class="name">Admin</div><div class="role">Administrator</div></div></div>
+  </div>
+</aside>
+
+<main class="main">
+  <div class="page-header">
+    <div><h1>Alerts & Notifications</h1><p style="color:var(--muted);font-size:14px">Manage and review all usage alerts</p></div>
+    <div style="display:flex;gap:10px">
+      <button class="btn-sm" onclick="markAllRead()">✓ Mark all read</button>
+      <button class="btn-sm" onclick="clearAll()">🗑 Clear all</button>
+    </div>
+  </div>
+
+  <!-- Live alert -->
+  <div class="live-alert" id="liveAlert">
+    <span style="font-size:20px">🚨</span>
+    <div style="flex:1">
+      <div style="font-weight:600;font-size:14px">Instagram limit exceeded — 30 minutes over!</div>
+      <div style="font-size:12px;color:var(--muted)">App has been paused. Tap to review.</div>
+    </div>
+    <span class="live-badge">LIVE</span>
+    <button class="btn-sm" onclick="dismissLive()" style="padding:6px 10px">✕</button>
+  </div>
+
+  <!-- Settings -->
+  <div class="settings-grid">
+    <div class="card">
+      <div class="card-title">🔔 Notification Settings</div>
+      <div class="toggle-row">
+        <div class="tr-info"><div class="tr-label">Over-limit alerts</div><div class="tr-desc">Notify when app exceeds daily limit</div></div>
+        <label class="toggle"><input type="checkbox" checked onchange="saveSetting(this,'overLimit')"/><span class="toggle-slider"></span></label>
+      </div>
+      <div class="toggle-row">
+        <div class="tr-info"><div class="tr-label">Warning at 75%</div><div class="tr-desc">Alert when 75% of limit is used</div></div>
+        <label class="toggle"><input type="checkbox" checked onchange="saveSetting(this,'warn75')"/><span class="toggle-slider"></span></label>
+      </div>
+      <div class="toggle-row">
+        <div class="tr-info"><div class="tr-label">Daily summary</div><div class="tr-desc">End-of-day usage report</div></div>
+        <label class="toggle"><input type="checkbox" checked onchange="saveSetting(this,'daily')"/><span class="toggle-slider"></span></label>
+      </div>
+      <div class="toggle-row">
+        <div class="tr-info"><div class="tr-label">Focus mode alerts</div><div class="tr-desc">Alert when focus mode is broken</div></div>
+        <label class="toggle"><input type="checkbox" onchange="saveSetting(this,'focus')"/><span class="toggle-slider"></span></label>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">⚙️ Alert Preferences</div>
+      <div class="toggle-row">
+        <div class="tr-info"><div class="tr-label">Sound alerts</div><div class="tr-desc">Play audio when limit exceeded</div></div>
+        <label class="toggle"><input type="checkbox" checked/><span class="toggle-slider"></span></label>
+      </div>
+      <div class="toggle-row">
+        <div class="tr-info"><div class="tr-label">Auto-pause app</div><div class="tr-desc">Pause app when limit is hit</div></div>
+        <label class="toggle"><input type="checkbox" checked/><span class="toggle-slider"></span></label>
+      </div>
+      <div class="toggle-row">
+        <div class="tr-info"><div class="tr-label">Weekly digest</div><div class="tr-desc">Weekly usage email report</div></div>
+        <label class="toggle"><input type="checkbox"/><span class="toggle-slider"></span></label>
+      </div>
+      <div class="toggle-row">
+        <div class="tr-info"><div class="tr-label">Strict mode</div><div class="tr-desc">Cannot override limits</div></div>
+        <label class="toggle"><input type="checkbox"/><span class="toggle-slider"></span></label>
+      </div>
+    </div>
+  </div>
+
+  <!-- Notifications list -->
+  <div>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+      <span style="font-family:'Syne',sans-serif;font-weight:700;font-size:16px">Recent Alerts</span>
+      <span id="unreadBadge" style="background:var(--coral);color:#fff;font-size:11px;font-weight:700;padding:3px 9px;border-radius:20px"></span>
+    </div>
+    <div class="type-filters">
+      <button class="type-btn active" onclick="filterNotifs('all',this)">All</button>
+      <button class="type-btn" onclick="filterNotifs('critical',this)">🚨 Critical</button>
+      <button class="type-btn" onclick="filterNotifs('warning',this)">⚠️ Warning</button>
+      <button class="type-btn" onclick="filterNotifs('info',this)">ℹ️ Info</button>
+      <button class="type-btn" onclick="filterNotifs('success',this)">✅ Success</button>
+    </div>
+    <div id="notifList"></div>
+  </div>
+</main>
+
+<script>
+let notifications = [
+  {id:1,type:'critical',icon:'📸',app:'Instagram',title:'Limit exceeded by 30 minutes',sub:'Daily limit: 2h • Used: 2h 30m',time:'2 min ago',unread:true},
+  {id:2,type:'critical',icon:'🎵',app:'TikTok',   title:'Daily limit reached (1h)',sub:'App has been paused automatically',time:'18 min ago',unread:true},
+  {id:3,type:'warning', icon:'▶️', app:'YouTube',  title:'Approaching limit — 5 min left',sub:'Daily limit: 1h • Used: 55m',time:'1 hr ago',unread:true},
+  {id:4,type:'warning', icon:'🐦',app:'Twitter',   title:'75% of limit used',sub:'Daily limit: 45m • Used: 34m',time:'2 hrs ago',unread:false},
+  {id:5,type:'critical',icon:'🎬',app:'Netflix',   title:'Limit exceeded by 20 minutes',sub:'Daily limit: 1h • Used: 1h 20m',time:'3 hrs ago',unread:false},
+  {id:6,type:'info',    icon:'📊',app:'System',    title:'Daily usage report ready',sub:'Total screen time today: 6h 42m',time:'4 hrs ago',unread:false},
+  {id:7,type:'success', icon:'🎯',app:'Focus',     title:'Focus session completed',sub:'2-hour deep work session finished',time:'5 hrs ago',unread:false},
+  {id:8,type:'warning', icon:'💬',app:'WhatsApp',  title:'Approaching limit — 10 min left',sub:'Daily limit: 1.5h • Used: 1h 20m',time:'6 hrs ago',unread:false},
+  {id:9,type:'info',    icon:'⚙️',app:'System',    title:'Weekly goal updated',sub:'New weekly limit set to 35h',time:'Yesterday',unread:false},
+  {id:10,type:'success',icon:'✅',app:'System',    title:'3-day streak: under daily limit',sub:'Keep it up! You\'re building great habits.',time:'Yesterday',unread:false},
+];
+
+let currentFilter='all';
+
+function renderNotifs(){
+  let data = notifications;
+  if(currentFilter!=='all') data=data.filter(n=>n.type===currentFilter);
+  const unread = notifications.filter(n=>n.unread).length;
+  const badge = document.getElementById('unreadBadge');
+  badge.textContent = unread>0 ? `${unread} unread` : '';
+  document.getElementById('notifList').innerHTML = data.map(n=>`
+    <div class="notif-card type-${n.type} ${n.unread?'unread':''}" onclick="readNotif(${n.id})">
+      <div class="nc-icon">${n.icon}</div>
+      <div class="nc-body">
+        <div class="nc-title">${n.title} ${n.unread?'<span style="color:var(--indigo);font-size:11px">● NEW</span>':''}</div>
+        <div class="nc-sub">${n.app} • ${n.sub}</div>
+      </div>
+      <div class="nc-time">${n.time}</div>
+      <button onclick="dismissNotif(event,${n.id})" style="background:none;border:none;color:var(--muted);cursor:pointer;padding:4px;font-size:16px">✕</button>
+    </div>`).join('') || '<div style="text-align:center;color:var(--muted);padding:40px">No alerts in this category</div>';
+}
+
+function readNotif(id){notifications=notifications.map(n=>n.id===id?{...n,unread:false}:n);renderNotifs();}
+function dismissNotif(e,id){e.stopPropagation();notifications=notifications.filter(n=>n.id!==id);renderNotifs();}
+function markAllRead(){notifications=notifications.map(n=>({...n,unread:false}));renderNotifs();}
+function clearAll(){notifications=[];renderNotifs();}
+function dismissLive(){document.getElementById('liveAlert').style.display='none';}
+function filterNotifs(f,btn){
+  currentFilter=f;
+  document.querySelectorAll('.type-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderNotifs();
+}
+function saveSetting(el,key){console.log(key,'=',el.checked);}
+
+renderNotifs();
+
+// Simulate new notification every 30s
+setInterval(()=>{
+  const apps=['Instagram','TikTok','Chrome','YouTube'];
+  const a=apps[Math.floor(Math.random()*apps.length)];
+  notifications.unshift({
+    id:Date.now(),type:'warning',icon:'⚠️',app:a,
+    title:`${a} approaching daily limit`,
+    sub:`Auto-generated alert`,time:'Just now',unread:true
+  });
+  renderNotifs();
+},30000);
+</script>
+</body>
+</html>

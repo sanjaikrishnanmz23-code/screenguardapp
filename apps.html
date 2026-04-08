@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>ScreenGuard – App Usage</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+  <script src="theme.js"></script>
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{--teal:#00d4b4;--indigo:#5c6ef8;--coral:#ff6b6b;--amber:#f59e0b;--green:#10b981;--bg:#0b0f1e;--card:#131929;--border:rgba(255,255,255,0.08);--text:#e8eaf6;--muted:#8892b0}
+    [data-theme="light"]{
+      --bg:#f0f4ff;--card:#ffffff;--card2:#f8faff;--border:rgba(0,0,0,0.08);
+      --text:#1a1f3c;--muted:#6b7280;
+    }
+    body { transition: background 0.3s, color 0.3s; }
+    body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex}
+    /* same sidebar as dashboard */
+    .sidebar{width:240px;flex-shrink:0;background:var(--card);border-right:1px solid var(--border);display:flex;flex-direction:column;padding:28px 20px;position:fixed;top:0;left:0;bottom:0;z-index:100}
+    .brand{display:flex;align-items:center;gap:10px;margin-bottom:36px;padding:0 8px}
+    .brand-icon{width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,var(--teal),var(--indigo));display:flex;align-items:center;justify-content:center;font-size:16px}
+    .brand-name{font-family:'Syne',sans-serif;font-size:18px;font-weight:800}
+    .nav{display:flex;flex-direction:column;gap:4px;flex:1}
+    .nav-item{display:flex;align-items:center;gap:12px;padding:11px 14px;border-radius:10px;color:var(--muted);font-size:14px;font-weight:500;cursor:pointer;text-decoration:none;transition:all 0.2s}
+    .nav-item:hover{background:rgba(255,255,255,0.06);color:var(--text)}
+    .nav-item.active{background:rgba(92,110,248,0.18);color:var(--indigo)}
+    .nav-icon{font-size:17px;width:22px;text-align:center}
+    .nav-divider{height:1px;background:var(--border);margin:12px 0}
+    .sidebar-bottom{padding:0 8px}
+    .user-card{display:flex;align-items:center;gap:10px;padding:12px;border-radius:12px;background:rgba(255,255,255,0.04);border:1px solid var(--border)}
+    .avatar{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--indigo),var(--teal));display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px}
+    .user-info .name{font-size:13px;font-weight:600}
+    .user-info .role{font-size:11px;color:var(--muted)}
+    /* main */
+    .main{margin-left:240px;flex:1;padding:32px}
+    .page-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:28px}
+    .page-header h1{font-family:'Syne',sans-serif;font-size:26px;font-weight:800}
+    .header-actions{display:flex;gap:10px;align-items:center}
+    .btn-sm{padding:9px 16px;border-radius:9px;border:1px solid var(--border);background:rgba(255,255,255,0.05);color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;cursor:pointer;transition:all 0.2s;display:flex;align-items:center;gap:6px}
+    .btn-sm:hover{background:rgba(255,255,255,0.1)}
+    .btn-sm.active-filter{background:var(--indigo);border-color:var(--indigo);color:#fff}
+    /* search bar */
+    .search-bar{display:flex;align-items:center;gap:8px;background:var(--card);border:1px solid var(--border);border-radius:10px;padding:9px 14px;width:220px}
+    .search-bar input{background:none;border:none;outline:none;color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;flex:1}
+    /* grid top */
+    .top-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-bottom:28px}
+    .mini-card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:20px;display:flex;flex-direction:column;gap:8px}
+    .mini-label{font-size:12px;color:var(--muted)}
+    .mini-value{font-family:'Syne',sans-serif;font-size:22px;font-weight:800}
+    .mini-bar{height:4px;background:rgba(255,255,255,0.08);border-radius:2px;overflow:hidden}
+    .mini-fill{height:100%;border-radius:2px}
+    /* app table */
+    .card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:24px}
+    .card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
+    .card-title{font-family:'Syne',sans-serif;font-size:16px;font-weight:700}
+    .table-wrap{overflow-x:auto}
+    table{width:100%;border-collapse:collapse}
+    thead th{text-align:left;font-size:12px;color:var(--muted);font-weight:500;padding:10px 12px;border-bottom:1px solid var(--border);white-space:nowrap}
+    tbody tr{transition:background 0.15s;cursor:pointer}
+    tbody tr:hover{background:rgba(255,255,255,0.03)}
+    td{padding:12px;font-size:14px;border-bottom:1px solid rgba(255,255,255,0.04)}
+    .app-cell{display:flex;align-items:center;gap:10px}
+    .app-icon-sm{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+    .app-name-cell{font-weight:600}
+    .app-cat{font-size:11px;color:var(--muted)}
+    .status-pill{padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600}
+    .status-over{background:rgba(255,107,107,0.15);color:#ff6b6b}
+    .status-warn{background:rgba(245,158,11,0.15);color:#f59e0b}
+    .status-ok  {background:rgba(16,185,129,0.15);color:#10b981}
+    .prog-cell{width:100px}
+    .progress-bar{height:5px;background:rgba(255,255,255,0.08);border-radius:3px;overflow:hidden}
+    .progress-fill{height:100%;border-radius:3px;transition:width 0.8s}
+    /* modal */
+    .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);backdrop-filter:blur(6px);z-index:200;align-items:center;justify-content:center}
+    .modal-overlay.show{display:flex}
+    .modal{background:#1a2035;border:1px solid var(--border);border-radius:20px;padding:32px;width:440px;max-width:95vw;animation:popIn 0.3s cubic-bezier(0.16,1,0.3,1)}
+    @keyframes popIn{from{opacity:0;transform:scale(0.9)}to{opacity:1;transform:scale(1)}}
+    .modal h3{font-family:'Syne',sans-serif;font-size:18px;font-weight:700;margin-bottom:6px}
+    .modal .modal-sub{color:var(--muted);font-size:13px;margin-bottom:24px}
+    .detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:20px}
+    .detail-item{background:rgba(255,255,255,0.04);border-radius:10px;padding:14px}
+    .detail-label{font-size:11px;color:var(--muted);margin-bottom:4px}
+    .detail-value{font-family:'Syne',sans-serif;font-size:18px;font-weight:700}
+    .modal-chart{height:120px;margin-bottom:20px}
+    .modal-close{float:right;background:none;border:none;color:var(--muted);font-size:20px;cursor:pointer}
+    @media(max-width:900px){.sidebar{width:64px;padding:20px 12px}.sidebar .brand-name,.sidebar .nav-item span,.sidebar .user-info{display:none}.main{margin-left:64px;padding:20px}}
+    @media(max-width:600px){.top-grid{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+<aside class="sidebar">
+  <div class="brand"><div class="brand-icon">⏱</div><div class="brand-name">ScreenGuard</div></div>
+  <nav class="nav">
+    <a class="nav-item " href="dashboard.html"><span class="nav-icon">📊</span><span>Dashboard</span></a>
+    <a class="nav-item active" href="apps.html"><span class="nav-icon">📱</span><span>App Usage</span></a>
+    <a class="nav-item " href="limits.html"><span class="nav-icon">⏳</span><span>Time Limits</span></a>
+    <a class="nav-item " href="stats.html"><span class="nav-icon">📈</span><span>Statistics</span></a>
+    <a class="nav-item " href="notifications.html"><span class="nav-icon">🔔</span><span>Alerts</span></a>
+    <a class="nav-item " href="focus.html"><span class="nav-icon">🎯</span><span>Focus Mode</span></a>
+    <div class="nav-divider"></div>
+    <a class="nav-item " href="about.html"><span class="nav-icon">ℹ️</span><span>About</span></a>
+    <a class="nav-item" href="login.html"><span class="nav-icon">🚪</span><span>Logout</span></a>
+  </nav>
+  <div class="sidebar-bottom">
+    <button class="theme-toggle-btn" onclick="SG.toggleTheme()">☀️ Light Mode</button>
+    <div class="user-card"><div class="avatar">A</div><div class="user-info"><div class="name">Admin</div><div class="role">Administrator</div></div></div>
+  </div>
+</aside>
+
+<main class="main">
+  <div class="page-header">
+    <div><h1>App Usage</h1><p style="color:var(--muted);font-size:14px">Monitoring 12 apps today</p></div>
+    <div class="header-actions">
+      <div class="search-bar">🔍 <input type="text" id="searchInput" placeholder="Search apps…" oninput="filterApps()"/></div>
+      <button class="btn-sm active-filter" id="filterAll" onclick="setFilter('all',this)">All</button>
+      <button class="btn-sm" id="filterOver" onclick="setFilter('over',this)">⚠ Over Limit</button>
+      <button class="btn-sm" id="filterOk" onclick="setFilter('ok',this)">✅ Within Limit</button>
+    </div>
+  </div>
+
+  <!-- Mini summary -->
+  <div class="top-grid">
+    <div class="mini-card">
+      <div class="mini-label">Total Usage Today</div>
+      <div class="mini-value">6h 42m</div>
+      <div class="mini-bar"><div class="mini-fill" style="width:70%;background:var(--indigo)"></div></div>
+    </div>
+    <div class="mini-card">
+      <div class="mini-label">Apps Over Limit</div>
+      <div class="mini-value" style="color:var(--coral)">3 / 12</div>
+      <div class="mini-bar"><div class="mini-fill" style="width:25%;background:var(--coral)"></div></div>
+    </div>
+    <div class="mini-card">
+      <div class="mini-label">Most Used App</div>
+      <div class="mini-value">Instagram</div>
+      <div class="mini-bar"><div class="mini-fill" style="width:85%;background:var(--teal)"></div></div>
+    </div>
+  </div>
+
+  <!-- Table -->
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title">All Applications</div>
+      <span style="color:var(--muted);font-size:13px">Click a row for details</span>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>App</th><th>Category</th><th>Used Today</th><th>Daily Limit</th>
+            <th>Progress</th><th>Sessions</th><th>Status</th>
+          </tr>
+        </thead>
+        <tbody id="appTableBody"></tbody>
+      </table>
+    </div>
+  </div>
+</main>
+
+<!-- Modal -->
+<div class="modal-overlay" id="modalOverlay" onclick="closeModal(event)">
+  <div class="modal" id="modal">
+    <button class="modal-close" onclick="document.getElementById('modalOverlay').classList.remove('show')">✕</button>
+    <div id="modalIcon" style="font-size:36px;margin-bottom:10px"></div>
+    <h3 id="modalTitle">App Name</h3>
+    <div class="modal-sub" id="modalSub">Category</div>
+    <div class="detail-grid" id="modalGrid"></div>
+    <div class="modal-chart"><canvas id="modalCanvas"></canvas></div>
+    <button class="btn-sm" style="width:100%;justify-content:center;background:var(--indigo);border-color:var(--indigo);color:#fff" onclick="window.location.href='limits.html'">⏳ Edit Time Limit</button>
+  </div>
+</div>
+
+<script>
+const allApps = [
+  {name:'Instagram', icon:'📸', color:'#e1306c', cat:'Social',  used:150, limit:120, sessions:8 },
+  {name:'YouTube',   icon:'▶️',  color:'#ff0000', cat:'Video',   used:90,  limit:60,  sessions:5 },
+  {name:'Chrome',    icon:'🌐', color:'#4285f4', cat:'Browser', used:75,  limit:180, sessions:14},
+  {name:'WhatsApp',  icon:'💬', color:'#25d366', cat:'Social',  used:45,  limit:90,  sessions:22},
+  {name:'TikTok',    icon:'🎵', color:'#010101', cat:'Video',   used:110, limit:60,  sessions:6 },
+  {name:'Spotify',   icon:'🎧', color:'#1db954', cat:'Music',   used:30,  limit:120, sessions:3 },
+  {name:'Gmail',     icon:'📧', color:'#ea4335', cat:'Productivity',used:20,limit:60,sessions:12},
+  {name:'Maps',      icon:'🗺️', color:'#fbbc05', cat:'Navigation',used:10,limit:30,sessions:4 },
+  {name:'Netflix',   icon:'🎬', color:'#e50914', cat:'Video',   used:80,  limit:60,  sessions:2 },
+  {name:'Twitter',   icon:'🐦', color:'#1da1f2', cat:'Social',  used:55,  limit:45,  sessions:7 },
+  {name:'Slack',     icon:'💼', color:'#4a154b', cat:'Work',    used:40,  limit:120, sessions:18},
+  {name:'Photos',    icon:'🖼️', color:'#ff9500', cat:'Media',   used:8,   limit:30,  sessions:5 },
+];
+
+let currentFilter='all', searchTerm='';
+let modalChart;
+
+function toHM(m){return `${Math.floor(m/60)}h ${m%60}m`;}
+function getStatus(used,limit){
+  if(used>limit) return {text:'Over Limit',cls:'status-over'};
+  if(used/limit>0.75) return {text:'Approaching',cls:'status-warn'};
+  return {text:'Within Limit',cls:'status-ok'};
+}
+
+function renderTable(){
+  let data = allApps;
+  if(currentFilter==='over') data=data.filter(a=>a.used>a.limit);
+  if(currentFilter==='ok')   data=data.filter(a=>a.used<=a.limit);
+  if(searchTerm) data=data.filter(a=>a.name.toLowerCase().includes(searchTerm));
+
+  document.getElementById('appTableBody').innerHTML = data.map((a,i) => {
+    const pct = Math.min((a.used/a.limit)*100,100);
+    const fillColor = a.used>a.limit ? '#ff6b6b' : (pct>75 ? '#f59e0b' : '#00d4b4');
+    const st = getStatus(a.used,a.limit);
+    return `<tr onclick="openModal(${allApps.indexOf(a)})">
+      <td><div class="app-cell"><div class="app-icon-sm" style="background:${a.color}22">${a.icon}</div>
+      <div><div class="app-name-cell">${a.name}</div></div></div></td>
+      <td style="color:var(--muted)">${a.cat}</td>
+      <td><b>${toHM(a.used)}</b></td>
+      <td style="color:var(--muted)">${toHM(a.limit)}</td>
+      <td class="prog-cell"><div class="progress-bar"><div class="progress-fill" style="width:${pct}%;background:${fillColor}"></div></div>
+      <div style="font-size:11px;color:var(--muted);margin-top:3px">${Math.round(pct)}%</div></td>
+      <td style="color:var(--muted)">${a.sessions}</td>
+      <td><span class="status-pill ${st.cls}">${st.text}</span></td>
+    </tr>`;
+  }).join('');
+}
+
+function filterApps(){searchTerm=document.getElementById('searchInput').value.toLowerCase();renderTable();}
+function setFilter(f,btn){
+  currentFilter=f;
+  document.querySelectorAll('.btn-sm[id^="filter"]').forEach(b=>b.classList.remove('active-filter'));
+  btn.classList.add('active-filter');
+  renderTable();
+}
+
+function openModal(idx){
+  const a = allApps[idx];
+  const st = getStatus(a.used,a.limit);
+  document.getElementById('modalIcon').textContent = a.icon;
+  document.getElementById('modalTitle').textContent = a.name;
+  document.getElementById('modalSub').textContent = a.cat + ' • ' + st.text;
+  document.getElementById('modalGrid').innerHTML = `
+    <div class="detail-item"><div class="detail-label">Used Today</div><div class="detail-value">${toHM(a.used)}</div></div>
+    <div class="detail-item"><div class="detail-label">Daily Limit</div><div class="detail-value">${toHM(a.limit)}</div></div>
+    <div class="detail-item"><div class="detail-label">Sessions</div><div class="detail-value">${a.sessions}</div></div>
+    <div class="detail-item"><div class="detail-label">Avg Session</div><div class="detail-value">${Math.round(a.used/a.sessions)}m</div></div>
+  `;
+  // Mini week chart
+  if(modalChart) modalChart.destroy();
+  const ctx = document.getElementById('modalCanvas').getContext('2d');
+  const weekData = [a.used*0.6,a.used*0.8,a.used*0.9,a.used*0.7,a.used*1.1,a.used*1.3,a.used].map(Math.round);
+  modalChart = new Chart(ctx,{
+    type:'line',
+    data:{labels:['Mon','Tue','Wed','Thu','Fri','Sat','Sun'],datasets:[{
+      data:weekData,fill:true,
+      backgroundColor:'rgba(92,110,248,0.15)',
+      borderColor:'#5c6ef8',borderWidth:2,pointRadius:3,tension:0.4
+    }]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
+      scales:{x:{ticks:{color:'#8892b0',font:{size:10}},grid:{display:false}},
+              y:{ticks:{color:'#8892b0',font:{size:10}},grid:{color:'rgba(255,255,255,0.05)'}}}}
+  });
+  document.getElementById('modalOverlay').classList.add('show');
+}
+
+function closeModal(e){
+  if(e.target.id==='modalOverlay') document.getElementById('modalOverlay').classList.remove('show');
+}
+
+renderTable();
+</script>
+</body>
+</html>

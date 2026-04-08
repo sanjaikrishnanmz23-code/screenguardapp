@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>ScreenGuard – About</title>
+  <script src="theme.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root,[data-theme="dark"]{
+      --teal:#00d4b4;--indigo:#5c6ef8;--coral:#ff6b6b;--amber:#f59e0b;--green:#10b981;
+      --bg:#0b0f1e;--card:#131929;--card2:#1a2035;--border:rgba(255,255,255,0.08);
+      --text:#e8eaf6;--muted:#8892b0;
+    }
+    [data-theme="light"]{
+      --bg:#f0f4ff;--card:#ffffff;--card2:#f8faff;--border:rgba(0,0,0,0.08);
+      --text:#1a1f3c;--muted:#6b7280;
+    }
+    body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;transition:background 0.3s,color 0.3s}
+
+    /* ── Sidebar ── */
+    .sidebar{width:240px;flex-shrink:0;background:var(--card);border-right:1px solid var(--border);display:flex;flex-direction:column;padding:28px 20px;position:fixed;top:0;left:0;bottom:0;z-index:100;transition:background 0.3s}
+    .brand{display:flex;align-items:center;gap:10px;margin-bottom:36px;padding:0 8px}
+    .brand-icon{width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,var(--teal),var(--indigo));display:flex;align-items:center;justify-content:center;font-size:16px}
+    .brand-name{font-family:'Syne',sans-serif;font-size:18px;font-weight:800}
+    .nav{display:flex;flex-direction:column;gap:4px;flex:1}
+    .nav-item{display:flex;align-items:center;gap:12px;padding:11px 14px;border-radius:10px;color:var(--muted);font-size:14px;font-weight:500;cursor:pointer;text-decoration:none;transition:all 0.2s}
+    .nav-item:hover{background:rgba(92,110,248,0.08);color:var(--text)}
+    .nav-item.active{background:rgba(92,110,248,0.18);color:var(--indigo)}
+    .nav-icon{font-size:17px;width:22px;text-align:center}
+    .nav-divider{height:1px;background:var(--border);margin:12px 0}
+    .sidebar-bottom{padding:0 8px;display:flex;flex-direction:column;gap:8px}
+    .user-card{display:flex;align-items:center;gap:10px;padding:12px;border-radius:12px;background:rgba(255,255,255,0.04);border:1px solid var(--border)}
+    [data-theme="light"] .user-card{background:rgba(0,0,0,0.03)}
+    .avatar{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--indigo),var(--teal));display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;color:#fff}
+    .user-info .name{font-size:13px;font-weight:600}
+    .user-info .role{font-size:11px;color:var(--muted)}
+    .theme-toggle-btn{width:100%;padding:10px 14px;border-radius:10px;border:1px solid var(--border);background:rgba(255,255,255,0.05);color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;cursor:pointer;transition:all 0.2s;text-align:left}
+    [data-theme="light"] .theme-toggle-btn{background:rgba(0,0,0,0.04)}
+    .theme-toggle-btn:hover{background:rgba(92,110,248,0.1);border-color:var(--indigo);color:var(--indigo)}
+
+    /* ── Main ── */
+    .main{margin-left:240px;flex:1;padding:32px;min-height:100vh}
+
+    /* ── Hero Banner ── */
+    .hero{background:var(--card);border:1px solid var(--border);border-radius:24px;padding:48px 40px;margin-bottom:28px;position:relative;overflow:hidden;transition:background 0.3s}
+    .hero::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 70% 90% at 0% 40%,rgba(92,110,248,0.18),transparent 60%),radial-gradient(ellipse 50% 60% at 100% 80%,rgba(0,212,180,0.12),transparent 60%);pointer-events:none}
+    .hero-badge{display:inline-flex;align-items:center;gap:8px;padding:6px 14px;border-radius:20px;background:rgba(92,110,248,0.15);border:1px solid rgba(92,110,248,0.3);color:var(--indigo);font-size:12px;font-weight:600;margin-bottom:18px}
+    .hero h1{font-family:'Syne',sans-serif;font-size:clamp(28px,4vw,42px);font-weight:800;line-height:1.15;margin-bottom:14px}
+    .hero h1 span{background:linear-gradient(90deg,var(--teal),var(--indigo));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+    .hero-desc{color:var(--muted);font-size:16px;line-height:1.7;max-width:620px;margin-bottom:28px}
+    .hero-meta{display:flex;gap:24px;flex-wrap:wrap}
+    .meta-item{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--muted)}
+    .meta-dot{width:8px;height:8px;border-radius:50%}
+
+    /* ── Section layout ── */
+    .section{margin-bottom:32px}
+    .section-title{font-family:'Syne',sans-serif;font-size:20px;font-weight:800;margin-bottom:6px;display:flex;align-items:center;gap:10px}
+    .section-sub{color:var(--muted);font-size:14px;margin-bottom:20px}
+
+    /* ── Cards ── */
+    .card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:24px;transition:background 0.3s}
+    .card-title{font-family:'Syne',sans-serif;font-size:15px;font-weight:700;margin-bottom:4px}
+    .card-sub{font-size:13px;color:var(--muted);margin-bottom:14px}
+
+    /* ── Tech stack ── */
+    .tech-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:14px;margin-bottom:28px}
+    .tech-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:18px;text-align:center;transition:transform 0.2s,border-color 0.2s}
+    .tech-card:hover{transform:translateY(-3px);border-color:rgba(92,110,248,0.3)}
+    .tech-icon{font-size:28px;margin-bottom:8px}
+    .tech-name{font-family:'Syne',sans-serif;font-size:14px;font-weight:700;margin-bottom:3px}
+    .tech-desc{font-size:11px;color:var(--muted)}
+
+    /* ── Feature guide cards ── */
+    .feature-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:18px;margin-bottom:28px}
+    .feature-card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:24px;transition:transform 0.2s,border-color 0.2s;position:relative;overflow:hidden}
+    .feature-card:hover{transform:translateY(-3px)}
+    .feature-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px}
+    .fc-teal::before{background:linear-gradient(90deg,var(--teal),transparent)}
+    .fc-indigo::before{background:linear-gradient(90deg,var(--indigo),transparent)}
+    .fc-coral::before{background:linear-gradient(90deg,var(--coral),transparent)}
+    .fc-amber::before{background:linear-gradient(90deg,var(--amber),transparent)}
+    .fc-green::before{background:linear-gradient(90deg,var(--green),transparent)}
+    .fc-purple::before{background:linear-gradient(90deg,#a855f7,transparent)}
+    .feature-icon-wrap{width:46px;height:46px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;margin-bottom:14px}
+    .feature-card h3{font-family:'Syne',sans-serif;font-size:15px;font-weight:700;margin-bottom:8px}
+    .feature-card p{font-size:13px;color:var(--muted);line-height:1.6;margin-bottom:12px}
+    .step-list{display:flex;flex-direction:column;gap:7px}
+    .step-item{display:flex;align-items:flex-start;gap:9px;font-size:13px}
+    .step-num{width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0;margin-top:1px;color:#fff}
+    .step-text{color:var(--muted);line-height:1.5}
+    .step-text strong{color:var(--text)}
+
+    /* ── Tips ── */
+    .tips-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;margin-bottom:28px}
+    .tip-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:20px;display:flex;gap:14px;transition:transform 0.2s,border-color 0.2s}
+    .tip-card:hover{transform:translateY(-2px);border-color:rgba(0,212,180,0.25)}
+    .tip-emoji{font-size:28px;flex-shrink:0;margin-top:2px}
+    .tip-content h4{font-family:'Syne',sans-serif;font-size:14px;font-weight:700;margin-bottom:5px}
+    .tip-content p{font-size:13px;color:var(--muted);line-height:1.55}
+    .tip-tag{display:inline-block;margin-top:8px;padding:2px 9px;border-radius:12px;font-size:11px;font-weight:600}
+
+    /* ── Team / Project info ── */
+    .team-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:16px;margin-bottom:28px}
+    .team-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:22px;text-align:center;transition:transform 0.2s}
+    .team-card:hover{transform:translateY(-3px)}
+    .team-avatar{width:60px;height:60px;border-radius:50%;margin:0 auto 12px;display:flex;align-items:center;justify-content:center;font-size:26px}
+    .team-name{font-family:'Syne',sans-serif;font-size:14px;font-weight:700;margin-bottom:3px}
+    .team-role{font-size:12px;color:var(--muted)}
+
+    /* ── Stats banner ── */
+    .stats-banner{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:28px}
+    .sb-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:20px;text-align:center}
+    .sb-val{font-family:'Syne',sans-serif;font-size:26px;font-weight:800;margin-bottom:4px}
+    .sb-label{font-size:12px;color:var(--muted)}
+
+    /* ── Accordion (FAQ inside About) ── */
+    .accordion{display:flex;flex-direction:column;gap:10px;margin-bottom:28px}
+    .acc-item{background:var(--card);border:1px solid var(--border);border-radius:12px;overflow:hidden;transition:border-color 0.2s}
+    .acc-item.open{border-color:rgba(92,110,248,0.3)}
+    .acc-header{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;cursor:pointer;font-size:14px;font-weight:600;gap:12px}
+    .acc-icon{font-size:18px;flex-shrink:0}
+    .acc-arrow{color:var(--muted);font-size:12px;transition:transform 0.3s;flex-shrink:0}
+    .acc-item.open .acc-arrow{transform:rotate(180deg);color:var(--indigo)}
+    .acc-body{max-height:0;overflow:hidden;transition:max-height 0.35s ease,padding 0.3s}
+    .acc-body.open{max-height:400px;padding:0 20px 18px}
+    .acc-body p{font-size:13px;color:var(--muted);line-height:1.65}
+    .acc-body ul{margin-top:8px;padding-left:18px;display:flex;flex-direction:column;gap:6px}
+    .acc-body ul li{font-size:13px;color:var(--muted);line-height:1.5}
+
+    @media(max-width:900px){.sidebar{width:64px;padding:20px 12px}.sidebar .brand-name,.sidebar .nav-item span,.sidebar .user-info{display:none}.main{margin-left:64px;padding:20px}.stats-banner{grid-template-columns:1fr 1fr}}
+    @media(max-width:600px){.stats-banner{grid-template-columns:1fr 1fr}.hero{padding:28px 20px}}
+  </style>
+</head>
+<body>
+
+<!-- ── Sidebar ── -->
+<aside class="sidebar">
+  <div class="brand"><div class="brand-icon">⏱</div><div class="brand-name">ScreenGuard</div></div>
+  <nav class="nav">
+    <a class="nav-item " href="dashboard.html"><span class="nav-icon">📊</span><span>Dashboard</span></a>
+    <a class="nav-item " href="apps.html"><span class="nav-icon">📱</span><span>App Usage</span></a>
+    <a class="nav-item " href="limits.html"><span class="nav-icon">⏳</span><span>Time Limits</span></a>
+    <a class="nav-item " href="stats.html"><span class="nav-icon">📈</span><span>Statistics</span></a>
+    <a class="nav-item " href="notifications.html"><span class="nav-icon">🔔</span><span>Alerts</span></a>
+    <a class="nav-item " href="focus.html"><span class="nav-icon">🎯</span><span>Focus Mode</span></a>
+    <div class="nav-divider"></div>
+    <a class="nav-item active" href="about.html"><span class="nav-icon">ℹ️</span><span>About</span></a>
+    <a class="nav-item" href="login.html"><span class="nav-icon">🚪</span><span>Logout</span></a>
+  </nav>
+  <div class="sidebar-bottom">
+    <button class="theme-toggle-btn" onclick="SG.toggleTheme()">☀️ Light Mode</button>
+    <div class="user-card"><div class="avatar">A</div><div class="user-info"><div class="name">Admin</div><div class="role">Administrator</div></div></div>
+  </div>
+</aside>
+
+<!-- ── Main ── -->
+<main class="main">
+
+  <!-- Hero -->
+  <div class="hero">
+    <div class="hero-badge">⏱ Version 1.0.0 &nbsp;•&nbsp; College Mini Project</div>
+    <h1>About <span>ScreenGuard</span></h1>
+    <p class="hero-desc">ScreenGuard is a web-based screen time control application built as a college mini project. It helps users monitor app usage, set smart time limits, build healthier digital habits, and boost productivity through focused work sessions.</p>
+    <div class="hero-meta">
+      <div class="meta-item"><div class="meta-dot" style="background:var(--teal)"></div>Built with HTML, CSS & JavaScript</div>
+      <div class="meta-item"><div class="meta-dot" style="background:var(--indigo)"></div>6 core pages + 2 info pages</div>
+      <div class="meta-item"><div class="meta-dot" style="background:var(--amber)"></div>No backend required</div>
+      <div class="meta-item"><div class="meta-dot" style="background:var(--coral)"></div>Dark & Light mode support</div>
+    </div>
+  </div>
+
+  <!-- Project stats -->
+  <div class="stats-banner">
+    <div class="sb-card"><div class="sb-val" style="color:var(--indigo)">8</div><div class="sb-label">Total Pages</div></div>
+    <div class="sb-card"><div class="sb-val" style="color:var(--teal)">12</div><div class="sb-label">Features Built</div></div>
+    <div class="sb-card"><div class="sb-val" style="color:var(--amber)">3</div><div class="sb-label">Libraries Used</div></div>
+    <div class="sb-card"><div class="sb-val" style="color:var(--green)">0</div><div class="sb-label">Backend Needed</div></div>
+  </div>
+
+  <!-- Tech stack -->
+  <div class="section">
+    <div class="section-title">🛠️ Technologies Used</div>
+    <div class="section-sub">All technologies used in this project — no frameworks, no installations needed</div>
+    <div class="tech-grid">
+      <div class="tech-card"><div class="tech-icon">🌐</div><div class="tech-name">HTML5</div><div class="tech-desc">Page structure & semantic layout</div></div>
+      <div class="tech-card"><div class="tech-icon">🎨</div><div class="tech-name">CSS3</div><div class="tech-desc">Styling, animations, dark/light theme</div></div>
+      <div class="tech-card"><div class="tech-icon">⚡</div><div class="tech-name">JavaScript</div><div class="tech-desc">All interactivity & data logic</div></div>
+      <div class="tech-card"><div class="tech-icon">📊</div><div class="tech-name">Chart.js</div><div class="tech-desc">Bar, line, doughnut & polar charts</div></div>
+      <div class="tech-card"><div class="tech-icon">🔤</div><div class="tech-name">Google Fonts</div><div class="tech-desc">Syne (headings) + DM Sans (body)</div></div>
+      <div class="tech-card"><div class="tech-icon">💾</div><div class="tech-name">localStorage</div><div class="tech-desc">Saves theme preference across pages</div></div>
+      <div class="tech-card"><div class="tech-icon">📐</div><div class="tech-name">CSS Grid</div><div class="tech-desc">Responsive layout system</div></div>
+      <div class="tech-card"><div class="tech-icon">🧩</div><div class="tech-name">CSS Variables</div><div class="tech-desc">Consistent theming tokens</div></div>
+    </div>
+  </div>
+
+  <!-- How to use each feature -->
+  <div class="section">
+    <div class="section-title">📖 How to Use Each Feature</div>
+    <div class="section-sub">Step-by-step guide to every page in ScreenGuard</div>
+    <div class="feature-grid">
+
+      <div class="feature-card fc-indigo">
+        <div class="feature-icon-wrap" style="background:rgba(92,110,248,0.15)">📊</div>
+        <h3>Dashboard</h3>
+        <p>Your main overview — see everything at a glance in real time.</p>
+        <div class="step-list">
+          <div class="step-item"><div class="step-num" style="background:var(--indigo)">1</div><div class="step-text">Check the <strong>4 stat cards</strong> at the top for total screen time, app count, limit breaches and focus score</div></div>
+          <div class="step-item"><div class="step-num" style="background:var(--indigo)">2</div><div class="step-text">Use the <strong>chart filter dropdown</strong> to view hourly usage per app</div></div>
+          <div class="step-item"><div class="step-num" style="background:var(--indigo)">3</div><div class="step-text">Check the <strong>Recent Alerts</strong> panel on the right for any limit warnings</div></div>
+          <div class="step-item"><div class="step-num" style="background:var(--indigo)">4</div><div class="step-text">Click <strong>+ Set Limit</strong> to quickly jump to the Time Limits page</div></div>
+        </div>
+      </div>
+
+      <div class="feature-card fc-teal">
+        <div class="feature-icon-wrap" style="background:rgba(0,212,180,0.15)">📱</div>
+        <h3>App Usage</h3>
+        <p>Monitor detailed usage data for every app being tracked.</p>
+        <div class="step-list">
+          <div class="step-item"><div class="step-num" style="background:var(--teal)">1</div><div class="step-text">Use the <strong>search bar</strong> to find a specific app quickly</div></div>
+          <div class="step-item"><div class="step-num" style="background:var(--teal)">2</div><div class="step-text">Click <strong>⚠ Over Limit</strong> filter to see only apps that exceeded their daily limit</div></div>
+          <div class="step-item"><div class="step-num" style="background:var(--teal)">3</div><div class="step-text"><strong>Click any row</strong> to open a detail modal with a 7-day usage mini chart</div></div>
+          <div class="step-item"><div class="step-num" style="background:var(--teal)">4</div><div class="step-text">Inside the modal, click <strong>Edit Time Limit</strong> to change that app's limit</div></div>
+        </div>
+      </div>
+
+      <div class="feature-card fc-amber">
+        <div class="feature-icon-wrap" style="background:rgba(245,158,11,0.15)">⏳</div>
+        <h3>Time Limits</h3>
+        <p>Set and save custom daily time limits for every app individually.</p>
+        <div class="step-list">
+          <div class="step-item"><div class="step-num" style="background:var(--amber)">1</div><div class="step-text">Find the app card and <strong>drag the slider</strong> left or right to set a new limit</div></div>
+          <div class="step-item"><div class="step-num" style="background:var(--amber)">2</div><div class="step-text">A <strong>💾 Save button</strong> appears — click it to confirm the new limit</div></div>
+          <div class="step-item"><div class="step-num" style="background:var(--amber)">3</div><div class="step-text">Click <strong>✕ Cancel</strong> to revert to the previous saved value</div></div>
+          <div class="step-item"><div class="step-num" style="background:var(--amber)">4</div><div class="step-text">Use the <strong>toggle switch</strong> to pause monitoring for any app</div></div>
+          <div class="step-item"><div class="step-num" style="background:var(--amber)">5</div><div class="step-text">Click <strong>+ Add App Limit</strong> to start tracking a new app</div></div>
+        </div>
+      </div>
+
+      <div class="feature-card fc-coral">
+        <div class="feature-icon-wrap" style="background:rgba(255,107,107,0.15)">📈</div>
+        <h3>Statistics</h3>
+        <p>Analyse your screen time trends with multiple chart types.</p>
+        <div class="step-list">
+          <div class="step-item"><div class="step-num" style="background:var(--coral)">1</div><div class="step-text">Switch between <strong>Week / Month / Overall</strong> using the period tabs at the top right</div></div>
+          <div class="step-item"><div class="step-num" style="background:var(--coral)">2</div><div class="step-text">The <strong>stacked bar chart</strong> shows daily usage split by category</div></div>
+          <div class="step-item"><div class="step-num" style="background:var(--coral)">3</div><div class="step-text">The <strong>activity heatmap</strong> shows which days of the month you used your screen most</div></div>
+          <div class="step-item"><div class="step-num" style="background:var(--coral)">4</div><div class="step-text">The <strong>Top 6 Apps</strong> panel shows a horizontal comparison bar for each app</div></div>
+        </div>
+      </div>
+
+      <div class="feature-card fc-purple">
+        <div class="feature-icon-wrap" style="background:rgba(168,85,247,0.15)">🔔</div>
+        <h3>Alerts</h3>
+        <p>Review and manage all over-limit notifications in one place.</p>
+        <div class="step-list">
+          <div class="step-item"><div class="step-num" style="background:#a855f7">1</div><div class="step-text">Use the <strong>filter tabs</strong> — Critical, Warning, Info, Success — to sort alerts</div></div>
+          <div class="step-item"><div class="step-num" style="background:#a855f7">2</div><div class="step-text">Click <strong>✓ Mark all read</strong> to clear the unread badge count</div></div>
+          <div class="step-item"><div class="step-num" style="background:#a855f7">3</div><div class="step-text">Toggle <strong>Notification Settings</strong> to turn specific alert types on or off</div></div>
+          <div class="step-item"><div class="step-num" style="background:#a855f7">4</div><div class="step-text">Set <strong>Quiet Hours</strong> so alerts don't disturb you during sleep or class</div></div>
+        </div>
+      </div>
+
+      <div class="feature-card fc-green">
+        <div class="feature-icon-wrap" style="background:rgba(16,185,129,0.15)">🎯</div>
+        <h3>Focus Mode</h3>
+        <p>Use the Pomodoro timer to stay productive during study sessions.</p>
+        <div class="step-list">
+          <div class="step-item"><div class="step-num" style="background:var(--green)">1</div><div class="step-text">Type your <strong>task name</strong> in the "What are you focusing on?" box</div></div>
+          <div class="step-item"><div class="step-num" style="background:var(--green)">2</div><div class="step-text">Choose a <strong>preset</strong> (Classic 25/5, Deep Work 50/10, etc.) or set a custom time</div></div>
+          <div class="step-item"><div class="step-num" style="background:var(--green)">3</div><div class="step-text">Press <strong>▶️ to start</strong> — the ring will count down. Press again to pause</div></div>
+          <div class="step-item"><div class="step-num" style="background:var(--green)">4</div><div class="step-text">After 4 focus sessions, take a <strong>long break</strong> — the app switches automatically</div></div>
+          <div class="step-item"><div class="step-num" style="background:var(--green)">5</div><div class="step-text">Watch your <strong>streak and focus time</strong> grow in the Today's Focus panel</div></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Study & Focus Tips -->
+  <div class="section">
+    <div class="section-title">💡 Study & Focus Tips</div>
+    <div class="section-sub">Science-backed strategies to improve concentration and manage your digital habits</div>
+    <div class="tips-grid">
+
+      <div class="tip-card">
+        <div class="tip-emoji">🍅</div>
+        <div class="tip-content">
+          <h4>The Pomodoro Technique</h4>
+          <p>Work in focused 25-minute bursts followed by a 5-minute break. After 4 sessions, take a 15–30 minute long break. This prevents mental fatigue and keeps your brain sharp throughout the day.</p>
+          <span class="tip-tag" style="background:rgba(92,110,248,0.15);color:var(--indigo)">Productivity</span>
+        </div>
+      </div>
+
+      <div class="tip-card">
+        <div class="tip-emoji">📵</div>
+        <div class="tip-content">
+          <h4>Phone-Free Study Zones</h4>
+          <p>Research shows that just having your phone visible (even face-down) reduces your available cognitive capacity. Place it in another room or inside a drawer during study sessions.</p>
+          <span class="tip-tag" style="background:rgba(255,107,107,0.15);color:var(--coral)">Habit</span>
+        </div>
+      </div>
+
+      <div class="tip-card">
+        <div class="tip-emoji">🌅</div>
+        <div class="tip-content">
+          <h4>No Screens for the First Hour</h4>
+          <p>Avoid checking your phone for the first 60 minutes after waking up. This helps your brain enter a calm, focused state before being bombarded with notifications and social media.</p>
+          <span class="tip-tag" style="background:rgba(245,158,11,0.15);color:var(--amber)">Morning Routine</span>
+        </div>
+      </div>
+
+      <div class="tip-card">
+        <div class="tip-emoji">🌙</div>
+        <div class="tip-content">
+          <h4>Screen-Free 1 Hour Before Bed</h4>
+          <p>Blue light from screens suppresses melatonin production and delays sleep by up to 90 minutes. Set a screen cutoff time in ScreenGuard's Quiet Hours to build this habit automatically.</p>
+          <span class="tip-tag" style="background:rgba(16,185,129,0.15);color:var(--green)">Sleep</span>
+        </div>
+      </div>
+
+      <div class="tip-card">
+        <div class="tip-emoji">🎯</div>
+        <div class="tip-content">
+          <h4>Set a Daily Screen Time Goal</h4>
+          <p>Students who track their screen time and set a daily limit reduce their usage by an average of 40% within two weeks. Use ScreenGuard's daily goal setter in Profile → Usage Goals.</p>
+          <span class="tip-tag" style="background:rgba(0,212,180,0.15);color:var(--teal)">Goal Setting</span>
+        </div>
+      </div>
+
+      <div class="tip-card">
+        <div class="tip-emoji">🔕</div>
+        <div class="tip-content">
+          <h4>Use Do Not Disturb During Study</h4>
+          <p>Every notification interruption takes an average of 23 minutes to fully recover focus from. Enable ScreenGuard alerts only for critical events, and silence your device during focus sessions.</p>
+          <span class="tip-tag" style="background:rgba(92,110,248,0.15);color:var(--indigo)">Focus</span>
+        </div>
+      </div>
+
+      <div class="tip-card">
+        <div class="tip-emoji">📊</div>
+        <div class="tip-content">
+          <h4>Review Your Weekly Stats Every Sunday</h4>
+          <p>Taking 5 minutes each Sunday to review your Statistics page helps you spot patterns — like which day of the week you scroll the most — and plan adjustments for the coming week.</p>
+          <span class="tip-tag" style="background:rgba(245,158,11,0.15);color:var(--amber)">Reflection</span>
+        </div>
+      </div>
+
+      <div class="tip-card">
+        <div class="tip-emoji">🧠</div>
+        <div class="tip-content">
+          <h4>The 20-20-20 Eye Rule</h4>
+          <p>Every 20 minutes of screen use, look at something 20 feet away for 20 seconds. This relaxes your eye muscles, reduces digital eye strain and headaches during long study sessions.</p>
+          <span class="tip-tag" style="background:rgba(16,185,129,0.15);color:var(--green)">Health</span>
+        </div>
+      </div>
+
+      <div class="tip-card">
+        <div class="tip-emoji">🏆</div>
+        <div class="tip-content">
+          <h4>Reward Good Digital Habits</h4>
+          <p>Give yourself a small reward after completing a full day within your screen time limits. Positive reinforcement is one of the most effective behaviour-change strategies backed by psychology research.</p>
+          <span class="tip-tag" style="background:rgba(255,107,107,0.15);color:var(--coral)">Motivation</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- FAQ inside About -->
+  <div class="section">
+    <div class="section-title">❓ Frequently Asked Questions</div>
+    <div class="section-sub">Quick answers to common questions about the project</div>
+    <div class="accordion" id="accordion">
+
+      <div class="acc-item">
+        <div class="acc-header" onclick="toggleAcc(this)">
+          <span class="acc-icon">🔐</span>
+          <span style="flex:1">Can I use my real Google or Apple account to log in?</span>
+          <span class="acc-arrow">▼</span>
+        </div>
+        <div class="acc-body">
+          <p>Not in this version. The Google and Apple login buttons are UI-simulated to demonstrate the interface design. Real OAuth login requires a registered backend server and API credentials from Google Cloud Console or Apple Developer Program. For this college mini project, the login UI demonstrates knowledge of authentication flows without requiring a live server.</p>
+        </div>
+      </div>
+
+      <div class="acc-item">
+        <div class="acc-header" onclick="toggleAcc(this)">
+          <span class="acc-icon">📱</span>
+          <span style="flex:1">Does ScreenGuard actually monitor my phone's apps?</span>
+          <span class="acc-arrow">▼</span>
+        </div>
+        <div class="acc-body">
+          <p>No — this is a front-end demonstration project. Real device-level app monitoring requires OS-level permissions (Android's UsageStatsManager or iOS Screen Time API) and a native mobile app or browser extension. The usage data shown is simulated to demonstrate the UI, monitoring logic, chart visualisations, and alert systems that a real app would use.</p>
+        </div>
+      </div>
+
+      <div class="acc-item">
+        <div class="acc-header" onclick="toggleAcc(this)">
+          <span class="acc-icon">💾</span>
+          <span style="flex:1">Does the app save my data when I close the browser?</span>
+          <span class="acc-arrow">▼</span>
+        </div>
+        <div class="acc-body">
+          <p>Partially. Your dark/light mode theme preference is saved using <code>localStorage</code> and persists between sessions. However, usage data, app limits you set, and notification history are held in memory (JavaScript variables) and will reset when you close or refresh the page. A real version would use a database like Firebase or MongoDB to persist all data.</p>
+        </div>
+      </div>
+
+      <div class="acc-item">
+        <div class="acc-header" onclick="toggleAcc(this)">
+          <span class="acc-icon">🛠️</span>
+          <span style="flex:1">What tools do I need to run this project?</span>
+          <span class="acc-arrow">▼</span>
+        </div>
+        <div class="acc-body">
+          <p>Just two things:</p>
+          <ul>
+            <li><strong>Visual Studio Code</strong> — free code editor from Microsoft (code.visualstudio.com)</li>
+            <li><strong>Live Server extension</strong> — install from VS Code's Extensions tab (by Ritwick Dey)</li>
+          </ul>
+          <p style="margin-top:8px">No Node.js, npm, or any other installation is required. All libraries (Chart.js, Google Fonts) are loaded via CDN links.</p>
+        </div>
+      </div>
+
+      <div class="acc-item">
+        <div class="acc-header" onclick="toggleAcc(this)">
+          <span class="acc-icon">🚀</span>
+          <span style="flex:1">Can this project be extended into a real app?</span>
+          <span class="acc-arrow">▼</span>
+        </div>
+        <div class="acc-body">
+          <p>Absolutely. To turn this into a full production app you would need to:</p>
+          <ul>
+            <li>Add a <strong>backend</strong> (Node.js + Express or Python + Flask) to store user data</li>
+            <li>Connect a <strong>database</strong> (Firebase, MongoDB, or PostgreSQL)</li>
+            <li>Implement <strong>real OAuth</strong> via Google Cloud Console</li>
+            <li>Build a <strong>browser extension</strong> to actually track tab/app usage</li>
+            <li>Deploy to a hosting service like <strong>Vercel, Netlify, or Render</strong></li>
+          </ul>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</main>
+
+<script>
+// Accordion toggle
+function toggleAcc(header) {
+  const item = header.parentElement;
+  const body = item.querySelector('.acc-body');
+  const isOpen = item.classList.contains('open');
+  // Close all
+  document.querySelectorAll('.acc-item').forEach(i => {
+    i.classList.remove('open');
+    i.querySelector('.acc-body').classList.remove('open');
+  });
+  // Open clicked if it was closed
+  if (!isOpen) {
+    item.classList.add('open');
+    body.classList.add('open');
+  }
+}
+
+// Sync theme toggle label
+document.querySelectorAll('.theme-toggle-btn').forEach(btn => {
+  btn.textContent = SG.getTheme() === 'light' ? '🌙 Dark Mode' : '☀️ Light Mode';
+});
+</script>
+</body>
+</html>

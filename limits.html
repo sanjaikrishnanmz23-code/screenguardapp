@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>ScreenGuard – Time Limits</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <script src="theme.js"></script>
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{--teal:#00d4b4;--indigo:#5c6ef8;--coral:#ff6b6b;--amber:#f59e0b;--green:#10b981;--bg:#0b0f1e;--card:#131929;--border:rgba(255,255,255,0.08);--text:#e8eaf6;--muted:#8892b0}
+    [data-theme="light"]{
+      --bg:#f0f4ff;--card:#ffffff;--card2:#f8faff;--border:rgba(0,0,0,0.08);
+      --text:#1a1f3c;--muted:#6b7280;
+    }
+    body { transition: background 0.3s, color 0.3s; }
+    body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex}
+    .sidebar{width:240px;flex-shrink:0;background:var(--card);border-right:1px solid var(--border);display:flex;flex-direction:column;padding:28px 20px;position:fixed;top:0;left:0;bottom:0;z-index:100}
+    .brand{display:flex;align-items:center;gap:10px;margin-bottom:36px;padding:0 8px}
+    .brand-icon{width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,var(--teal),var(--indigo));display:flex;align-items:center;justify-content:center;font-size:16px}
+    .brand-name{font-family:'Syne',sans-serif;font-size:18px;font-weight:800}
+    .nav{display:flex;flex-direction:column;gap:4px;flex:1}
+    .nav-item{display:flex;align-items:center;gap:12px;padding:11px 14px;border-radius:10px;color:var(--muted);font-size:14px;font-weight:500;cursor:pointer;text-decoration:none;transition:all 0.2s}
+    .nav-item:hover{background:rgba(255,255,255,0.06);color:var(--text)}
+    .nav-item.active{background:rgba(92,110,248,0.18);color:var(--indigo)}
+    .nav-icon{font-size:17px;width:22px;text-align:center}
+    .nav-divider{height:1px;background:var(--border);margin:12px 0}
+    .sidebar-bottom{padding:0 8px}
+    .user-card{display:flex;align-items:center;gap:10px;padding:12px;border-radius:12px;background:rgba(255,255,255,0.04);border:1px solid var(--border)}
+    .avatar{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--indigo),var(--teal));display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px}
+    .user-info .name{font-size:13px;font-weight:600}
+    .user-info .role{font-size:11px;color:var(--muted)}
+    .main{margin-left:240px;flex:1;padding:32px}
+    .page-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:28px}
+    .page-header h1{font-family:'Syne',sans-serif;font-size:26px;font-weight:800}
+    .btn-primary{padding:11px 20px;border-radius:10px;border:none;background:linear-gradient(135deg,var(--indigo),#7c8cf8);color:#fff;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;cursor:pointer;box-shadow:0 4px 14px rgba(92,110,248,0.35);transition:transform 0.15s,box-shadow 0.15s}
+    .btn-primary:hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(92,110,248,0.4)}
+    .btn-sm{padding:8px 14px;border-radius:8px;border:1px solid var(--border);background:rgba(255,255,255,0.05);color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;cursor:pointer;transition:all 0.2s}
+    .btn-sm:hover{background:rgba(255,255,255,0.1)}
+    /* Info strip */
+    .info-strip{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:28px}
+    .info-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:18px;display:flex;align-items:center;gap:14px}
+    .info-icon{width:42px;height:42px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+    .info-label{font-size:12px;color:var(--muted);margin-bottom:3px}
+    .info-value{font-family:'Syne',sans-serif;font-size:20px;font-weight:700}
+    /* Limit cards grid */
+    .limits-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:18px}
+    .limit-card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:22px;transition:transform 0.2s,border-color 0.2s}
+    .limit-card:hover{transform:translateY(-3px);border-color:rgba(92,110,248,0.3)}
+    .limit-card.over{border-color:rgba(255,107,107,0.3)}
+    .lc-top{display:flex;align-items:center;gap:12px;margin-bottom:16px}
+    .lc-icon{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0}
+    .lc-name{font-family:'Syne',sans-serif;font-size:15px;font-weight:700}
+    .lc-cat{font-size:12px;color:var(--muted)}
+    .lc-toggle{margin-left:auto}
+    /* Toggle switch */
+    .toggle{position:relative;width:44px;height:24px;flex-shrink:0}
+    .toggle input{opacity:0;width:0;height:0}
+    .toggle-slider{position:absolute;cursor:pointer;inset:0;background:rgba(255,255,255,0.1);border-radius:24px;transition:0.3s}
+    .toggle-slider::before{content:'';position:absolute;height:18px;width:18px;left:3px;bottom:3px;background:#fff;border-radius:50%;transition:0.3s}
+    .toggle input:checked+.toggle-slider{background:var(--teal)}
+    .toggle input:checked+.toggle-slider::before{transform:translateX(20px)}
+    /* Slider */
+    .slider-row{margin-bottom:14px}
+    .slider-label{display:flex;justify-content:space-between;font-size:13px;color:var(--muted);margin-bottom:8px}
+    .slider-label span{font-size:13px;font-weight:600;color:var(--text)}
+    input[type=range]{-webkit-appearance:none;width:100%;height:5px;border-radius:3px;outline:none;cursor:pointer;transition:background 0.2s}
+    input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;border-radius:50%;background:var(--indigo);box-shadow:0 0 0 3px rgba(92,110,248,0.3);cursor:pointer}
+    .progress-bar{height:6px;background:rgba(255,255,255,0.08);border-radius:3px;overflow:hidden;margin-bottom:8px}
+    .progress-fill{height:100%;border-radius:3px;transition:width 0.5s}
+    .usage-text{display:flex;justify-content:space-between;font-size:12px;color:var(--muted)}
+    .lc-actions{display:flex;gap:8px;margin-top:16px}
+    .lc-actions .btn-sm{flex:1;text-align:center;justify-content:center}
+    .btn-danger{background:rgba(255,107,107,0.1);border-color:rgba(255,107,107,0.3);color:var(--coral)}
+    .btn-danger:hover{background:rgba(255,107,107,0.2)}
+    /* Save/Cancel row — hidden by default */
+    .save-row{display:none;gap:8px;margin-top:10px}
+    .save-row.visible{display:flex}
+    .btn-save{flex:1;padding:9px;border-radius:8px;border:none;background:linear-gradient(135deg,var(--teal),#00b89c);color:#fff;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:700;cursor:pointer;box-shadow:0 4px 12px rgba(0,212,180,0.35);transition:transform 0.15s,box-shadow 0.15s;display:flex;align-items:center;justify-content:center;gap:6px}
+    .btn-save:hover{transform:translateY(-2px);box-shadow:0 8px 18px rgba(0,212,180,0.45)}
+    .btn-cancel{flex:1;padding:9px;border-radius:8px;border:1px solid var(--border);background:rgba(255,255,255,0.05);color:var(--muted);font-family:'DM Sans',sans-serif;font-size:13px;cursor:pointer;transition:all 0.2s;display:flex;align-items:center;justify-content:center;gap:6px}
+    .btn-cancel:hover{background:rgba(255,255,255,0.1);color:var(--text)}
+    /* Unsaved indicator dot on card */
+    .limit-card.unsaved{border-color:rgba(0,212,180,0.45);box-shadow:0 0 0 2px rgba(0,212,180,0.12)}
+    .unsaved-badge{display:none;font-size:11px;color:var(--teal);font-weight:600;margin-left:6px}
+    .limit-card.unsaved .unsaved-badge{display:inline}
+    /* Add app modal */
+    .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.65);backdrop-filter:blur(6px);z-index:200;align-items:center;justify-content:center}
+    .modal-overlay.show{display:flex}
+    .modal{background:#1a2035;border:1px solid var(--border);border-radius:20px;padding:32px;width:460px;max-width:96vw;animation:popIn 0.3s cubic-bezier(0.16,1,0.3,1)}
+    @keyframes popIn{from{opacity:0;transform:scale(0.9)}to{opacity:1;transform:scale(1)}}
+    .modal h3{font-family:'Syne',sans-serif;font-size:20px;font-weight:700;margin-bottom:20px}
+    .form-group{margin-bottom:18px}
+    label{display:block;font-size:13px;color:var(--muted);margin-bottom:7px}
+    input[type=text],select{width:100%;padding:11px 14px;border-radius:10px;background:rgba(255,255,255,0.06);border:1px solid var(--border);color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;outline:none;transition:border 0.2s}
+    input[type=text]:focus,select:focus{border-color:var(--indigo)}
+    select option{background:#1a2035;color:var(--text)}
+    .modal-actions{display:flex;gap:10px;margin-top:4px}
+    .modal-actions .btn-sm{flex:1;text-align:center;padding:11px}
+    /* Toast */
+    .toast{position:fixed;bottom:28px;right:28px;background:#1e2540;border:1px solid var(--border);border-radius:12px;padding:14px 20px;font-size:14px;box-shadow:0 16px 40px rgba(0,0,0,0.4);transform:translateY(80px);opacity:0;transition:all 0.4s cubic-bezier(0.16,1,0.3,1);z-index:999}
+    .toast.show{transform:translateY(0);opacity:1}
+    @media(max-width:900px){.sidebar{width:64px;padding:20px 12px}.sidebar .brand-name,.sidebar .nav-item span,.sidebar .user-info{display:none}.main{margin-left:64px;padding:20px}}
+    @media(max-width:600px){.info-strip{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+<aside class="sidebar">
+  <div class="brand"><div class="brand-icon">⏱</div><div class="brand-name">ScreenGuard</div></div>
+  <nav class="nav">
+    <a class="nav-item " href="dashboard.html"><span class="nav-icon">📊</span><span>Dashboard</span></a>
+    <a class="nav-item " href="apps.html"><span class="nav-icon">📱</span><span>App Usage</span></a>
+    <a class="nav-item active" href="limits.html"><span class="nav-icon">⏳</span><span>Time Limits</span></a>
+    <a class="nav-item " href="stats.html"><span class="nav-icon">📈</span><span>Statistics</span></a>
+    <a class="nav-item " href="notifications.html"><span class="nav-icon">🔔</span><span>Alerts</span></a>
+    <a class="nav-item " href="focus.html"><span class="nav-icon">🎯</span><span>Focus Mode</span></a>
+    <div class="nav-divider"></div>
+    <a class="nav-item " href="about.html"><span class="nav-icon">ℹ️</span><span>About</span></a>
+    <a class="nav-item" href="login.html"><span class="nav-icon">🚪</span><span>Logout</span></a>
+  </nav>
+  <div class="sidebar-bottom">
+    <button class="theme-toggle-btn" onclick="SG.toggleTheme()">☀️ Light Mode</button>
+    <div class="user-card"><div class="avatar">A</div><div class="user-info"><div class="name">Admin</div><div class="role">Administrator</div></div></div>
+  </div>
+</aside>
+
+<main class="main">
+  <div class="page-header">
+    <div><h1>Time Limits</h1><p style="color:var(--muted);font-size:14px">Manage per-app daily limits</p></div>
+    <button class="btn-primary" onclick="document.getElementById('addModal').classList.add('show')">+ Add App Limit</button>
+  </div>
+
+  <div class="info-strip">
+    <div class="info-card"><div class="info-icon" style="background:rgba(92,110,248,0.15)">⏳</div><div><div class="info-label">Active Limits</div><div class="info-value" id="activeCount">12</div></div></div>
+    <div class="info-card"><div class="info-icon" style="background:rgba(255,107,107,0.15)">🚨</div><div><div class="info-label">Currently Exceeded</div><div class="info-value" style="color:var(--coral)" id="exceededCount">3</div></div></div>
+    <div class="info-card"><div class="info-icon" style="background:rgba(16,185,129,0.15)">✅</div><div><div class="info-label">Within Limits</div><div class="info-value" style="color:var(--green)" id="withinCount">9</div></div></div>
+  </div>
+
+  <div class="limits-grid" id="limitsGrid"></div>
+</main>
+
+<!-- Add limit modal -->
+<div class="modal-overlay" id="addModal" onclick="closeAddModal(event)">
+  <div class="modal">
+    <h3>Add App Limit</h3>
+    <div class="form-group"><label>App Name</label><input type="text" id="newAppName" placeholder="e.g. Discord"/></div>
+    <div class="form-group"><label>Category</label>
+      <select id="newCat"><option>Social</option><option>Video</option><option>Browser</option><option>Music</option><option>Work</option><option>Games</option><option>Other</option></select>
+    </div>
+    <div class="form-group"><label>Daily Limit: <span id="newLimitDisplay">60 min</span></label>
+      <input type="range" min="5" max="480" step="5" value="60" id="newLimitSlider" oninput="document.getElementById('newLimitDisplay').textContent=toHM(+this.value)"/>
+    </div>
+    <div class="form-group"><label>App Icon (emoji)</label><input type="text" id="newIcon" placeholder="💬" maxlength="2"/></div>
+    <div class="modal-actions">
+      <button class="btn-sm" onclick="document.getElementById('addModal').classList.remove('show')">Cancel</button>
+      <button class="btn-sm" style="background:var(--indigo);border-color:var(--indigo);color:#fff" onclick="addApp()">Add Limit</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ── Storage key ──────────────────────────────────────────────────────────────
+const STORAGE_KEY = 'sg_app_limits';
+
+// ── Default app list (used ONLY on very first visit — never again) ───────────
+const DEFAULT_APPS = [
+  {name:'Instagram',icon:'📸',color:'#e1306c',cat:'Social',     used:150,limit:120,enabled:true},
+  {name:'YouTube',  icon:'▶️', color:'#ff0000',cat:'Video',      used:90, limit:60, enabled:true},
+  {name:'Chrome',   icon:'🌐',color:'#4285f4', cat:'Browser',    used:75, limit:180,enabled:true},
+  {name:'WhatsApp', icon:'💬',color:'#25d366', cat:'Social',     used:45, limit:90, enabled:true},
+  {name:'TikTok',   icon:'🎵',color:'#00f2ea', cat:'Video',      used:110,limit:60, enabled:true},
+  {name:'Spotify',  icon:'🎧',color:'#1db954', cat:'Music',      used:30, limit:120,enabled:true},
+  {name:'Gmail',    icon:'📧',color:'#ea4335', cat:'Work',       used:20, limit:60, enabled:true},
+  {name:'Maps',     icon:'🗺️',color:'#fbbc05', cat:'Navigation', used:10, limit:30, enabled:true},
+  {name:'Netflix',  icon:'🎬',color:'#e50914', cat:'Video',      used:80, limit:60, enabled:false},
+  {name:'Twitter',  icon:'🐦',color:'#1da1f2', cat:'Social',     used:55, limit:45, enabled:true},
+  {name:'Slack',    icon:'💼',color:'#4a154b', cat:'Work',       used:40, limit:120,enabled:true},
+  {name:'Photos',   icon:'🖼️',color:'#ff9500', cat:'Media',      used:8,  limit:30, enabled:true},
+];
+
+// ── Load from localStorage — fall back to defaults on first visit ─────────────
+function loadApps() {
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+    }
+  } catch(e) { console.warn('Could not parse saved apps:', e); }
+  return JSON.parse(JSON.stringify(DEFAULT_APPS)); // deep copy of defaults
+}
+
+// ── Save entire apps array to localStorage ────────────────────────────────────
+function persistApps() {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(apps));
+  } catch(e) { console.warn('Could not save apps:', e); }
+}
+
+// ── Active app list (loaded from localStorage) ────────────────────────────────
+let apps = loadApps();
+
+// ── Pending slider changes (not yet saved) ────────────────────────────────────
+let pendingLimits = {};
+
+// ── Helper ────────────────────────────────────────────────────────────────────
+function toHM(m){ const h=Math.floor(m/60); return h>0?`${h}h ${m%60}m`:`${m} min`; }
+
+// ── Update summary counts ─────────────────────────────────────────────────────
+function updateCounts(){
+  const active   = apps.filter(a=>a.enabled).length;
+  const exceeded = apps.filter(a=>a.enabled && a.used>a.limit).length;
+  document.getElementById('activeCount').textContent   = active;
+  document.getElementById('exceededCount').textContent = exceeded;
+  document.getElementById('withinCount').textContent   = active - exceeded;
+}
+
+// ── Render all app cards ──────────────────────────────────────────────────────
+function renderGrid(){
+  updateCounts();
+  pendingLimits = {};
+  document.getElementById('limitsGrid').innerHTML = apps.map((a,i)=>{
+    const pct  = Math.min((a.used/a.limit)*100, 100);
+    const over = a.used > a.limit;
+    const fill = over ? '#ff6b6b' : (pct>75 ? '#f59e0b' : '#00d4b4');
+    return `<div class="limit-card${over?' over':''}" id="card${i}">
+      <div class="lc-top">
+        <div class="lc-icon" style="background:${a.color}22">${a.icon}</div>
+        <div>
+          <div class="lc-name">${a.name}<span class="unsaved-badge">● unsaved</span></div>
+          <div class="lc-cat">${a.cat}</div>
+        </div>
+        <label class="toggle lc-toggle">
+          <input type="checkbox" ${a.enabled?'checked':''} onchange="toggleApp(${i},this.checked)"/>
+          <span class="toggle-slider"></span>
+        </label>
+      </div>
+      <div class="slider-row">
+        <div class="slider-label">
+          <span>Daily Limit</span>
+          <span id="lv${i}">${toHM(a.limit)}</span>
+        </div>
+        <input type="range" min="5" max="480" step="5" value="${a.limit}"
+          id="slider${i}"
+          style="background:linear-gradient(to right,${fill} ${pct}%,rgba(255,255,255,0.1) ${pct}%)"
+          oninput="previewLimit(${i},this)"/>
+      </div>
+      <div class="progress-bar">
+        <div class="progress-fill" id="prog${i}" style="width:${pct}%;background:${fill}"></div>
+      </div>
+      <div class="usage-text">
+        <span>Used: ${toHM(a.used)}</span>
+        <span id="pct${i}">${Math.round(pct)}%</span>
+      </div>
+      <div class="save-row" id="saveRow${i}">
+        <button class="btn-save" onclick="saveLimit(${i})">💾 Save</button>
+        <button class="btn-cancel" onclick="cancelLimit(${i})">✕ Cancel</button>
+      </div>
+      <div class="lc-actions">
+        <button class="btn-sm" onclick="resetUsage(${i})">↺ Reset Usage</button>
+        <button class="btn-sm btn-danger" onclick="removeApp(${i})">🗑 Remove</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ── Live preview while dragging (does NOT save yet) ───────────────────────────
+function previewLimit(i, el){
+  const newVal = +el.value;
+  pendingLimits[i] = newVal;
+  const pct  = Math.min((apps[i].used/newVal)*100, 100);
+  const fill = apps[i].used>newVal ? '#ff6b6b' : (pct>75 ? '#f59e0b' : '#00d4b4');
+  document.getElementById('lv'+i).textContent          = toHM(newVal);
+  document.getElementById('prog'+i).style.width        = pct+'%';
+  document.getElementById('prog'+i).style.background   = fill;
+  document.getElementById('pct'+i).textContent         = Math.round(pct)+'%';
+  el.style.background = `linear-gradient(to right,${fill} ${pct}%,rgba(255,255,255,0.1) ${pct}%)`;
+  document.getElementById('saveRow'+i).classList.add('visible');
+  document.getElementById('card'+i).classList.add('unsaved');
+}
+
+// ── SAVE — writes to apps array AND localStorage ──────────────────────────────
+function saveLimit(i){
+  if(pendingLimits[i] === undefined) return;
+  apps[i].limit = pendingLimits[i];
+  delete pendingLimits[i];
+  persistApps(); // 💾 write to localStorage immediately
+  document.getElementById('saveRow'+i).classList.remove('visible');
+  document.getElementById('card'+i).classList.remove('unsaved');
+  document.getElementById('card'+i).classList.toggle('over', apps[i].used > apps[i].limit);
+  updateCounts();
+  showToast(`✅ ${apps[i].name} limit saved — ${toHM(apps[i].limit)}`);
+}
+
+// ── CANCEL — reverts slider to last saved value ───────────────────────────────
+function cancelLimit(i){
+  if(pendingLimits[i] === undefined) return;
+  delete pendingLimits[i];
+  const a    = apps[i];
+  const pct  = Math.min((a.used/a.limit)*100, 100);
+  const fill = a.used>a.limit ? '#ff6b6b' : (pct>75 ? '#f59e0b' : '#00d4b4');
+  document.getElementById('slider'+i).value            = a.limit;
+  document.getElementById('lv'+i).textContent          = toHM(a.limit);
+  document.getElementById('prog'+i).style.width        = pct+'%';
+  document.getElementById('prog'+i).style.background   = fill;
+  document.getElementById('pct'+i).textContent         = Math.round(pct)+'%';
+  document.getElementById('slider'+i).style.background =
+    `linear-gradient(to right,${fill} ${pct}%,rgba(255,255,255,0.1) ${pct}%)`;
+  document.getElementById('saveRow'+i).classList.remove('visible');
+  document.getElementById('card'+i).classList.remove('unsaved');
+  showToast(`↩ ${a.name} — reverted to ${toHM(a.limit)}`);
+}
+
+// ── Toggle enable/disable — persists immediately ──────────────────────────────
+function toggleApp(i, val){
+  apps[i].enabled = val;
+  persistApps(); // 💾 save toggle state
+  renderGrid();
+  showToast(`${apps[i].name} ${val ? 'enabled ✅' : 'paused ⏸️'}`);
+}
+
+// ── Reset usage — persists immediately ───────────────────────────────────────
+function resetUsage(i){
+  apps[i].used = 0;
+  persistApps(); // 💾 save reset
+  renderGrid();
+  showToast(`↺ ${apps[i].name} usage reset`);
+}
+
+// ── Remove app — persists immediately ────────────────────────────────────────
+function removeApp(i){
+  const name = apps[i].name;
+  apps.splice(i, 1);
+  persistApps(); // 💾 save removal
+  renderGrid();
+  showToast(`🗑 ${name} removed`);
+}
+
+// ── Add new app — persists immediately ───────────────────────────────────────
+function addApp(){
+  const name = document.getElementById('newAppName').value.trim();
+  if(!name){ showToast('Please enter an app name'); return; }
+  apps.push({
+    name,
+    icon   : document.getElementById('newIcon').value || '📱',
+    color  : '#5c6ef8',
+    cat    : document.getElementById('newCat').value,
+    used   : 0,
+    limit  : +document.getElementById('newLimitSlider').value,
+    enabled: true,
+  });
+  persistApps(); // 💾 save new app
+  document.getElementById('addModal').classList.remove('show');
+  // Clear form
+  document.getElementById('newAppName').value = '';
+  document.getElementById('newIcon').value    = '';
+  renderGrid();
+  showToast(`✅ ${name} added and saved!`);
+}
+
+function closeAddModal(e){ if(e.target.id==='addModal') document.getElementById('addModal').classList.remove('show'); }
+
+// ── Toast ─────────────────────────────────────────────────────────────────────
+function showToast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), 2800);
+}
+
+// ── Init ─────────────────────────────────────────────────────────────────────
+renderGrid();
+</script>
+</body>
+</html>

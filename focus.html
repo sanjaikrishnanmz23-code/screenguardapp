@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>ScreenGuard – Focus Mode</title>
+  <script src="theme.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+
+    /* ── DARK theme (default) ── */
+    :root,[data-theme="dark"]{
+      --teal:#00d4b4;--indigo:#5c6ef8;--coral:#ff6b6b;--amber:#f59e0b;--green:#10b981;
+      --bg:#0b0f1e;--card:#131929;--card2:#1a2035;--border:rgba(255,255,255,0.08);
+      --text:#e8eaf6;--muted:#8892b0;--shadow:rgba(0,0,0,0.5);
+    }
+    /* ── LIGHT theme ── */
+    [data-theme="light"]{
+      --bg:#f0f4ff;--card:#ffffff;--card2:#f8faff;--border:rgba(0,0,0,0.08);
+      --text:#1a1f3c;--muted:#6b7280;--shadow:rgba(0,0,0,0.1);
+    }
+
+    body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;transition:background 0.3s,color 0.3s}
+
+    /* Sidebar */
+    .sidebar{width:240px;flex-shrink:0;background:var(--card);border-right:1px solid var(--border);display:flex;flex-direction:column;padding:28px 20px;position:fixed;top:0;left:0;bottom:0;z-index:100;transition:background 0.3s}
+    .brand{display:flex;align-items:center;gap:10px;margin-bottom:36px;padding:0 8px}
+    .brand-icon{width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,var(--teal),var(--indigo));display:flex;align-items:center;justify-content:center;font-size:16px}
+    .brand-name{font-family:'Syne',sans-serif;font-size:18px;font-weight:800}
+    .nav{display:flex;flex-direction:column;gap:4px;flex:1}
+    .nav-item{display:flex;align-items:center;gap:12px;padding:11px 14px;border-radius:10px;color:var(--muted);font-size:14px;font-weight:500;cursor:pointer;text-decoration:none;transition:all 0.2s}
+    .nav-item:hover{background:rgba(92,110,248,0.08);color:var(--text)}
+    .nav-item.active{background:rgba(92,110,248,0.18);color:var(--indigo)}
+    .nav-icon{font-size:17px;width:22px;text-align:center}
+    .nav-divider{height:1px;background:var(--border);margin:12px 0}
+    .sidebar-bottom{padding:0 8px;display:flex;flex-direction:column;gap:8px}
+    .user-card{display:flex;align-items:center;gap:10px;padding:12px;border-radius:12px;background:rgba(255,255,255,0.04);border:1px solid var(--border)}
+    [data-theme="light"] .user-card{background:rgba(0,0,0,0.03)}
+    .avatar{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--indigo),var(--teal));display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;color:#fff}
+    .user-info .name{font-size:13px;font-weight:600}
+    .user-info .role{font-size:11px;color:var(--muted)}
+    .theme-toggle-btn{width:100%;padding:10px 14px;border-radius:10px;border:1px solid var(--border);background:rgba(255,255,255,0.05);color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;cursor:pointer;transition:all 0.2s;text-align:left}
+    [data-theme="light"] .theme-toggle-btn{background:rgba(0,0,0,0.04)}
+    .theme-toggle-btn:hover{background:rgba(92,110,248,0.1);border-color:var(--indigo);color:var(--indigo)}
+
+    /* Main */
+    .main{margin-left:240px;flex:1;padding:32px;min-height:100vh}
+    .page-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:32px}
+    .page-header h1{font-family:'Syne',sans-serif;font-size:26px;font-weight:800}
+    .btn-sm{padding:9px 16px;border-radius:9px;border:1px solid var(--border);background:rgba(255,255,255,0.05);color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;cursor:pointer;transition:all 0.2s}
+    [data-theme="light"] .btn-sm{background:rgba(0,0,0,0.04)}
+    .btn-sm:hover{background:rgba(92,110,248,0.1);border-color:var(--indigo);color:var(--indigo)}
+
+    /* Layout */
+    .focus-layout{display:grid;grid-template-columns:1fr 340px;gap:24px;align-items:start}
+
+    /* ── Timer Card ── */
+    .timer-card{background:var(--card);border:1px solid var(--border);border-radius:24px;padding:40px 32px;text-align:center;transition:background 0.3s}
+    .mode-tabs{display:flex;gap:4px;background:rgba(255,255,255,0.05);border-radius:12px;padding:4px;margin-bottom:36px}
+    [data-theme="light"] .mode-tabs{background:rgba(0,0,0,0.06)}
+    .mode-btn{flex:1;padding:9px;border:none;background:none;color:var(--muted);font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;border-radius:9px;cursor:pointer;transition:all 0.25s}
+    .mode-btn.active{background:var(--indigo);color:#fff;box-shadow:0 4px 12px rgba(92,110,248,0.4)}
+
+    /* SVG ring timer */
+    .ring-wrap{position:relative;width:260px;height:260px;margin:0 auto 32px}
+    .ring-wrap svg{transform:rotate(-90deg)}
+    .ring-bg{fill:none;stroke:rgba(255,255,255,0.07);stroke-width:12}
+    [data-theme="light"] .ring-bg{stroke:rgba(0,0,0,0.07)}
+    .ring-fill{fill:none;stroke-width:12;stroke-linecap:round;transition:stroke-dashoffset 0.9s linear,stroke 0.4s}
+    .ring-center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+    .timer-display{font-family:'Syne',sans-serif;font-size:52px;font-weight:800;line-height:1;letter-spacing:-2px}
+    .timer-label{font-size:13px;color:var(--muted);margin-top:6px;font-weight:500}
+
+    /* Controls */
+    .timer-controls{display:flex;gap:12px;justify-content:center;margin-bottom:28px}
+    .ctrl-btn{width:56px;height:56px;border-radius:50%;border:none;cursor:pointer;font-size:20px;transition:transform 0.15s,box-shadow 0.15s;display:flex;align-items:center;justify-content:center}
+    .ctrl-btn:hover{transform:scale(1.08)}
+    .btn-play{background:linear-gradient(135deg,var(--indigo),#7c8cf8);box-shadow:0 6px 20px rgba(92,110,248,0.4)}
+    .btn-play.running{background:linear-gradient(135deg,var(--amber),#f97316);box-shadow:0 6px 20px rgba(245,158,11,0.4)}
+    .btn-reset{background:rgba(255,255,255,0.08);color:var(--muted)}
+    [data-theme="light"] .btn-reset{background:rgba(0,0,0,0.07)}
+    .btn-skip{background:rgba(255,255,255,0.08);color:var(--muted)}
+    [data-theme="light"] .btn-skip{background:rgba(0,0,0,0.07)}
+
+    /* Session dots */
+    .session-dots{display:flex;gap:8px;justify-content:center;margin-bottom:24px}
+    .dot{width:10px;height:10px;border-radius:50%;background:rgba(255,255,255,0.12);transition:all 0.3s}
+    [data-theme="light"] .dot{background:rgba(0,0,0,0.1)}
+    .dot.done{background:var(--teal);box-shadow:0 0 8px rgba(0,212,180,0.5)}
+    .dot.current{background:var(--indigo);box-shadow:0 0 8px rgba(92,110,248,0.6);animation:dotPulse 1.2s infinite}
+    @keyframes dotPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.3)}}
+
+    /* Focus task input */
+    .task-input-wrap{margin-top:4px}
+    .task-input-wrap label{font-size:13px;color:var(--muted);display:block;margin-bottom:8px}
+    .task-input{width:100%;padding:11px 14px;border-radius:10px;background:rgba(255,255,255,0.05);border:1px solid var(--border);color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;outline:none;transition:border 0.2s}
+    [data-theme="light"] .task-input{background:rgba(0,0,0,0.04)}
+    .task-input:focus{border-color:var(--indigo);box-shadow:0 0 0 3px rgba(92,110,248,0.15)}
+
+    /* ── Right panel ── */
+    .right-panel{display:flex;flex-direction:column;gap:18px}
+    .card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:22px;transition:background 0.3s}
+    .card-title{font-family:'Syne',sans-serif;font-size:15px;font-weight:700;margin-bottom:16px}
+
+    /* Stats */
+    .stat-row{display:flex;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--border);font-size:14px}
+    .stat-row:last-child{border-bottom:none}
+    .stat-row .val{font-weight:700;color:var(--indigo)}
+
+    /* Log */
+    .log-item{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--border);font-size:13px}
+    .log-item:last-child{border-bottom:none}
+    .log-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+    .log-text{flex:1;color:var(--text)}
+    .log-time{color:var(--muted);font-size:11px}
+
+    /* Preset buttons */
+    .preset-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+    .preset-btn{padding:10px 6px;border-radius:10px;border:1px solid var(--border);background:rgba(255,255,255,0.04);color:var(--text);font-family:'DM Sans',sans-serif;font-size:12px;font-weight:600;cursor:pointer;transition:all 0.2s;text-align:center}
+    [data-theme="light"] .preset-btn{background:rgba(0,0,0,0.03)}
+    .preset-btn:hover{background:rgba(92,110,248,0.12);border-color:var(--indigo);color:var(--indigo)}
+    .preset-btn.selected{background:rgba(92,110,248,0.2);border-color:var(--indigo);color:var(--indigo)}
+
+    /* Ambient sound */
+    .sound-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+    .sound-btn{padding:10px;border-radius:10px;border:1px solid var(--border);background:rgba(255,255,255,0.04);color:var(--muted);font-family:'DM Sans',sans-serif;font-size:12px;cursor:pointer;transition:all 0.2s;display:flex;align-items:center;gap:6px}
+    [data-theme="light"] .sound-btn{background:rgba(0,0,0,0.03)}
+    .sound-btn:hover{background:rgba(0,212,180,0.1);border-color:var(--teal);color:var(--teal)}
+    .sound-btn.active{background:rgba(0,212,180,0.15);border-color:var(--teal);color:var(--teal)}
+
+    /* Notification banner */
+    .notif-banner{position:fixed;top:24px;left:50%;transform:translateX(-50%) translateY(-100px);background:linear-gradient(135deg,var(--indigo),#7c8cf8);color:#fff;padding:14px 28px;border-radius:14px;font-size:14px;font-weight:600;box-shadow:0 12px 40px rgba(92,110,248,0.5);z-index:999;transition:transform 0.5s cubic-bezier(0.16,1,0.3,1);white-space:nowrap}
+    .notif-banner.show{transform:translateX(-50%) translateY(0)}
+
+    @media(max-width:1050px){.focus-layout{grid-template-columns:1fr}}
+    @media(max-width:900px){.sidebar{width:64px;padding:20px 12px}.sidebar .brand-name,.sidebar .nav-item span,.sidebar .user-info,.sidebar .theme-toggle-btn span{display:none}.main{margin-left:64px;padding:20px}}
+  </style>
+</head>
+<body>
+
+<aside class="sidebar">
+  <div class="brand"><div class="brand-icon">⏱</div><div class="brand-name">ScreenGuard</div></div>
+  <nav class="nav">
+    <a class="nav-item " href="dashboard.html"><span class="nav-icon">📊</span><span>Dashboard</span></a>
+    <a class="nav-item " href="apps.html"><span class="nav-icon">📱</span><span>App Usage</span></a>
+    <a class="nav-item " href="limits.html"><span class="nav-icon">⏳</span><span>Time Limits</span></a>
+    <a class="nav-item " href="stats.html"><span class="nav-icon">📈</span><span>Statistics</span></a>
+    <a class="nav-item " href="notifications.html"><span class="nav-icon">🔔</span><span>Alerts</span></a>
+    <a class="nav-item active" href="focus.html"><span class="nav-icon">🎯</span><span>Focus Mode</span></a>
+    <div class="nav-divider"></div>
+    <a class="nav-item " href="about.html"><span class="nav-icon">ℹ️</span><span>About</span></a>
+    <a class="nav-item" href="login.html"><span class="nav-icon">🚪</span><span>Logout</span></a>
+  </nav>
+  <div class="sidebar-bottom">
+    <button class="theme-toggle-btn" onclick="SG.toggleTheme()">☀️ Light Mode</button>
+    <div class="user-card"><div class="avatar">A</div><div class="user-info"><div class="name">Admin</div><div class="role">Administrator</div></div></div>
+  </div>
+</aside>
+
+<main class="main">
+  <div class="page-header">
+    <div><h1>🎯 Focus Mode</h1><p style="color:var(--muted);font-size:14px">Pomodoro timer to boost your productivity</p></div>
+    <a href="stats.html" class="btn-sm">📈 View Stats</a>
+  </div>
+
+  <div class="focus-layout">
+    <!-- Timer -->
+    <div class="timer-card">
+      <div class="mode-tabs">
+        <button class="mode-btn active" id="modePomodoro" onclick="setMode('pomodoro',this)">🍅 Pomodoro</button>
+        <button class="mode-btn" id="modeShort" onclick="setMode('short',this)">☕ Short Break</button>
+        <button class="mode-btn" id="modeLong" onclick="setMode('long',this)">🛌 Long Break</button>
+      </div>
+
+      <!-- Ring -->
+      <div class="ring-wrap">
+        <svg width="260" height="260" viewBox="0 0 260 260">
+          <circle class="ring-bg" cx="130" cy="130" r="114"/>
+          <circle class="ring-fill" id="ringFill" cx="130" cy="130" r="114"
+            stroke-dasharray="716.3" stroke-dashoffset="0" stroke="var(--indigo)"/>
+        </svg>
+        <div class="ring-center">
+          <div class="timer-display" id="timerDisplay">25:00</div>
+          <div class="timer-label" id="timerLabel">Focus Session</div>
+        </div>
+      </div>
+
+      <!-- Session dots (4 pomodoros) -->
+      <div class="session-dots" id="sessionDots"></div>
+
+      <!-- Controls -->
+      <div class="timer-controls">
+        <button class="ctrl-btn btn-reset" onclick="resetTimer()" title="Reset">🔄</button>
+        <button class="ctrl-btn btn-play" id="playBtn" onclick="toggleTimer()">▶️</button>
+        <button class="ctrl-btn btn-skip" onclick="skipSession()" title="Skip">⏭</button>
+      </div>
+
+      <!-- Task input -->
+      <div class="task-input-wrap">
+        <label>What are you focusing on?</label>
+        <input class="task-input" id="taskInput" type="text" placeholder="e.g. Study for exam, Write report…"/>
+      </div>
+    </div>
+
+    <!-- Right panel -->
+    <div class="right-panel">
+
+      <!-- Presets -->
+      <div class="card">
+        <div class="card-title">⚡ Quick Presets</div>
+        <div class="preset-grid">
+          <button class="preset-btn selected" id="preset2515" onclick="applyPreset(25,5,15,this)">Classic<br><span style="color:var(--indigo)">25/5/15</span></button>
+          <button class="preset-btn" id="preset5010" onclick="applyPreset(50,10,30,this)">Deep Work<br><span style="color:var(--indigo)">50/10/30</span></button>
+          <button class="preset-btn" id="preset1535" onclick="applyPreset(15,3,10,this)">Quick<br><span style="color:var(--indigo)">15/3/10</span></button>
+          <button class="preset-btn" id="preset9020" onclick="applyPreset(90,20,45,this)">Marathon<br><span style="color:var(--indigo)">90/20/45</span></button>
+          <button class="preset-btn" id="preset4510" onclick="applyPreset(45,10,20,this)">Standard<br><span style="color:var(--indigo)">45/10/20</span></button>
+          <button class="preset-btn" id="presetCustom" onclick="openCustom()">Custom<br><span style="color:var(--muted)">Set own</span></button>
+        </div>
+        <!-- Custom inputs (hidden by default) -->
+        <div id="customInputs" style="display:none;margin-top:14px">
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">
+            <div><label style="font-size:11px;color:var(--muted)">Focus (min)</label>
+              <input type="number" id="customFocus" value="25" min="1" max="180" style="width:100%;padding:8px;border-radius:8px;background:rgba(255,255,255,0.06);border:1px solid var(--border);color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;outline:none"/></div>
+            <div><label style="font-size:11px;color:var(--muted)">Short (min)</label>
+              <input type="number" id="customShort" value="5" min="1" max="60" style="width:100%;padding:8px;border-radius:8px;background:rgba(255,255,255,0.06);border:1px solid var(--border);color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;outline:none"/></div>
+            <div><label style="font-size:11px;color:var(--muted)">Long (min)</label>
+              <input type="number" id="customLong" value="15" min="1" max="90" style="width:100%;padding:8px;border-radius:8px;background:rgba(255,255,255,0.06);border:1px solid var(--border);color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;outline:none"/></div>
+          </div>
+          <button onclick="applyCustomPreset()" style="width:100%;margin-top:10px;padding:9px;border-radius:9px;border:none;background:var(--indigo);color:#fff;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer">Apply Custom</button>
+        </div>
+      </div>
+
+      <!-- Today's stats -->
+      <div class="card">
+        <div class="card-title">📊 Today's Focus</div>
+        <div class="stat-row"><span>Sessions Completed</span><span class="val" id="statSessions">0</span></div>
+        <div class="stat-row"><span>Total Focus Time</span><span class="val" id="statFocusTime">0m</span></div>
+        <div class="stat-row"><span>Breaks Taken</span><span class="val" id="statBreaks">0</span></div>
+        <div class="stat-row"><span>Current Streak</span><span class="val" id="statStreak">0 🔥</span></div>
+      </div>
+
+      <!-- Session log -->
+      <div class="card">
+        <div class="card-title">📋 Session Log</div>
+        <div id="sessionLog" style="max-height:180px;overflow-y:auto">
+          <div style="font-size:13px;color:var(--muted);text-align:center;padding:20px">No sessions yet — start your first! 🚀</div>
+        </div>
+      </div>
+
+      <!-- Ambient sounds -->
+      <div class="card">
+        <div class="card-title">🎵 Ambient Sound</div>
+        <div class="sound-grid">
+          <button class="sound-btn" onclick="toggleSound(this,'🌧️')">🌧️ Rain</button>
+          <button class="sound-btn" onclick="toggleSound(this,'🌊')">🌊 Ocean</button>
+          <button class="sound-btn" onclick="toggleSound(this,'🔥')">🔥 Fire</button>
+          <button class="sound-btn" onclick="toggleSound(this,'🌿')">🌿 Forest</button>
+          <button class="sound-btn" onclick="toggleSound(this,'☕')">☕ Café</button>
+          <button class="sound-btn" onclick="toggleSound(this,'🎹')">🎹 Piano</button>
+        </div>
+        <p style="font-size:11px;color:var(--muted);margin-top:10px;text-align:center">Ambient sounds are simulated (no audio files needed)</p>
+      </div>
+    </div>
+  </div>
+</main>
+
+<!-- Notification banner -->
+<div class="notif-banner" id="notifBanner">🎉 Session complete!</div>
+
+<script>
+// ── State ──
+let durations = { pomodoro: 25, short: 5, long: 15 }; // minutes
+let currentMode = 'pomodoro';
+let totalSeconds = durations.pomodoro * 60;
+let remaining = totalSeconds;
+let running = false;
+let intervalId = null;
+let sessionsCompleted = 0;
+let breaksCompleted = 0;
+let totalFocusSeconds = 0;
+let streak = 0;
+const CIRCUMFERENCE = 2 * Math.PI * 114; // 716.28
+
+// ── Render session dots (4 per round) ──
+function renderDots() {
+  const container = document.getElementById('sessionDots');
+  container.innerHTML = '';
+  for (let i = 0; i < 4; i++) {
+    const d = document.createElement('div');
+    d.className = 'dot';
+    if (i < sessionsCompleted % 4) d.classList.add('done');
+    else if (i === sessionsCompleted % 4 && currentMode === 'pomodoro') d.classList.add('current');
+    container.appendChild(d);
+  }
+}
+
+// ── Update ring ──
+function updateRing() {
+  const pct = remaining / totalSeconds;
+  const offset = CIRCUMFERENCE * (1 - pct);
+  const fill = document.getElementById('ringFill');
+  fill.style.strokeDashoffset = offset;
+  // Color by mode
+  fill.style.stroke = currentMode === 'pomodoro' ? 'var(--indigo)' : currentMode === 'short' ? 'var(--teal)' : 'var(--amber)';
+}
+
+// ── Format time ──
+function fmt(s) {
+  const m = Math.floor(s / 60).toString().padStart(2, '0');
+  const sec = (s % 60).toString().padStart(2, '0');
+  return `${m}:${sec}`;
+}
+
+// ── Tick ──
+function tick() {
+  if (remaining <= 0) {
+    clearInterval(intervalId);
+    running = false;
+    onSessionEnd();
+    return;
+  }
+  remaining--;
+  if (currentMode === 'pomodoro') totalFocusSeconds++;
+  document.getElementById('timerDisplay').textContent = fmt(remaining);
+  updateRing();
+  updateStats();
+}
+
+// ── Session end ──
+function onSessionEnd() {
+  const playBtn = document.getElementById('playBtn');
+  playBtn.textContent = '▶️';
+  playBtn.classList.remove('running');
+
+  if (currentMode === 'pomodoro') {
+    sessionsCompleted++;
+    streak++;
+    logSession('✅ Focus session', durations.pomodoro + 'm', 'var(--teal)');
+    showBanner('🎉 Focus session done! Take a break.');
+    // Auto switch to break
+    if (sessionsCompleted % 4 === 0) setMode('long', document.getElementById('modeLong'));
+    else setMode('short', document.getElementById('modeShort'));
+  } else {
+    breaksCompleted++;
+    logSession('☕ Break taken', durations[currentMode] + 'm', 'var(--amber)');
+    showBanner('💪 Break over! Back to focus.');
+    setMode('pomodoro', document.getElementById('modePomodoro'));
+  }
+  renderDots();
+  updateStats();
+}
+
+// ── Controls ──
+function toggleTimer() {
+  const btn = document.getElementById('playBtn');
+  if (running) {
+    clearInterval(intervalId);
+    running = false;
+    btn.textContent = '▶️';
+    btn.classList.remove('running');
+  } else {
+    intervalId = setInterval(tick, 1000);
+    running = true;
+    btn.textContent = '⏸️';
+    btn.classList.add('running');
+  }
+}
+
+function resetTimer() {
+  clearInterval(intervalId);
+  running = false;
+  remaining = totalSeconds;
+  document.getElementById('timerDisplay').textContent = fmt(remaining);
+  document.getElementById('playBtn').textContent = '▶️';
+  document.getElementById('playBtn').classList.remove('running');
+  updateRing();
+}
+
+function skipSession() {
+  clearInterval(intervalId);
+  running = false;
+  remaining = 0;
+  onSessionEnd();
+}
+
+// ── Mode switch ──
+const modeLabels = { pomodoro: 'Focus Session', short: 'Short Break', long: 'Long Break' };
+function setMode(mode, btn) {
+  clearInterval(intervalId);
+  running = false;
+  currentMode = mode;
+  totalSeconds = durations[mode] * 60;
+  remaining = totalSeconds;
+  document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('timerDisplay').textContent = fmt(remaining);
+  document.getElementById('timerLabel').textContent = modeLabels[mode];
+  document.getElementById('playBtn').textContent = '▶️';
+  document.getElementById('playBtn').classList.remove('running');
+  updateRing();
+  renderDots();
+}
+
+// ── Presets ──
+function applyPreset(focus, short, long, btn) {
+  durations.pomodoro = focus; durations.short = short; durations.long = long;
+  document.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+  document.getElementById('customInputs').style.display = 'none';
+  setMode('pomodoro', document.getElementById('modePomodoro'));
+}
+
+function openCustom() {
+  document.getElementById('customInputs').style.display =
+    document.getElementById('customInputs').style.display === 'none' ? 'block' : 'none';
+}
+
+function applyCustomPreset() {
+  const f = +document.getElementById('customFocus').value;
+  const s = +document.getElementById('customShort').value;
+  const l = +document.getElementById('customLong').value;
+  if (!f || !s || !l) return;
+  document.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('selected'));
+  document.getElementById('presetCustom').classList.add('selected');
+  applyPreset(f, s, l, document.getElementById('presetCustom'));
+}
+
+// ── Stats update ──
+function updateStats() {
+  const fm = m => m >= 60 ? `${Math.floor(m/60)}h ${m%60}m` : `${m}m`;
+  const focusMin = Math.round(totalFocusSeconds / 60);
+  document.getElementById('statSessions').textContent = sessionsCompleted;
+  document.getElementById('statFocusTime').textContent = fm(focusMin);
+  document.getElementById('statBreaks').textContent = breaksCompleted;
+  document.getElementById('statStreak').textContent = streak + (streak >= 3 ? ' 🔥' : '');
+}
+
+// ── Session log ──
+function logSession(label, duration, color) {
+  const log = document.getElementById('sessionLog');
+  const task = document.getElementById('taskInput').value || 'General focus';
+  const now = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  const item = document.createElement('div');
+  item.className = 'log-item';
+  item.innerHTML = `<div class="log-dot" style="background:${color}"></div>
+    <div class="log-text">${label} — <em style="color:var(--muted)">${task}</em></div>
+    <div class="log-time">${duration} • ${now}</div>`;
+  if (log.firstChild && log.firstChild.style && log.firstChild.style.textAlign) log.innerHTML = '';
+  log.prepend(item);
+}
+
+// ── Notification banner ──
+function showBanner(msg) {
+  const b = document.getElementById('notifBanner');
+  b.textContent = msg;
+  b.classList.add('show');
+  setTimeout(() => b.classList.remove('show'), 3500);
+}
+
+// ── Ambient sound toggle (visual only) ──
+let activeSound = null;
+function toggleSound(btn, label) {
+  if (activeSound === btn) {
+    btn.classList.remove('active');
+    activeSound = null;
+  } else {
+    document.querySelectorAll('.sound-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    activeSound = btn;
+  }
+}
+
+// ── Init ──
+updateRing();
+renderDots();
+updateStats();
+
+// Update theme toggle button label on load
+document.querySelectorAll('.theme-toggle-btn').forEach(btn => {
+  btn.textContent = SG.getTheme() === 'light' ? '🌙 Dark Mode' : '☀️ Light Mode';
+});
+</script>
+</body>
+</html>

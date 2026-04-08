@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>ScreenGuard – Dashboard</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <script src="theme.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root,[data-theme="dark"] {
+      --teal:   #00d4b4;
+      --indigo: #5c6ef8;
+      --coral:  #ff6b6b;
+      --amber:  #f59e0b;
+      --green:  #10b981;
+      --bg:     #0b0f1e;
+      --bg2:    #0f1428;
+      --card:   #131929;
+      --card2:  #1a2035;
+      --border: rgba(255,255,255,0.08);
+      --text:   #e8eaf6;
+      --muted:  #8892b0;
+    }
+    [data-theme="light"] {
+      --bg:#f0f4ff; --bg2:#e8eeff; --card:#ffffff; --card2:#f8faff;
+      --border:rgba(0,0,0,0.08); --text:#1a1f3c; --muted:#6b7280;
+    }
+    body { font-family:'DM Sans',sans-serif; background:var(--bg); color:var(--text); min-height:100vh; display:flex; transition:background 0.3s,color 0.3s; }
+
+    /* ── Sidebar ── */
+    .sidebar {
+      width: 240px; flex-shrink: 0;
+      background: var(--card);
+      border-right: 1px solid var(--border);
+      display: flex; flex-direction: column;
+      padding: 28px 20px; position: fixed; top:0; left:0; bottom:0;
+      z-index: 100;
+    }
+    .brand { display:flex; align-items:center; gap:10px; margin-bottom:36px; padding:0 8px; }
+    .brand-icon { width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,var(--teal),var(--indigo));display:flex;align-items:center;justify-content:center;font-size:16px; }
+    .brand-name { font-family:'Syne',sans-serif;font-size:18px;font-weight:800; }
+    .nav { display:flex;flex-direction:column;gap:4px;flex:1; }
+    .nav-item {
+      display:flex;align-items:center;gap:12px;padding:11px 14px;border-radius:10px;
+      color:var(--muted);font-size:14px;font-weight:500;cursor:pointer;
+      text-decoration:none;transition:all 0.2s;
+    }
+    .nav-item:hover { background:rgba(255,255,255,0.06); color:var(--text); }
+    .nav-item.active { background:rgba(92,110,248,0.18); color:var(--indigo); }
+    .nav-icon { font-size:17px;width:22px;text-align:center; }
+    .nav-divider { height:1px;background:var(--border);margin:12px 0; }
+
+    .sidebar-bottom { padding: 0 8px; }
+    .user-card {
+      display:flex;align-items:center;gap:10px;padding:12px;border-radius:12px;
+      background:rgba(255,255,255,0.04);border:1px solid var(--border);cursor:pointer;
+    }
+    .avatar { width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--indigo),var(--teal));display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px; }
+    .user-info .name { font-size:13px;font-weight:600; }
+    .user-info .role { font-size:11px;color:var(--muted); }
+
+    /* ── Main ── */
+    .main { margin-left:240px;flex:1;padding:32px; min-height:100vh; }
+
+    .page-header { display:flex;align-items:center;justify-content:space-between;margin-bottom:32px; }
+    .page-header h1 { font-family:'Syne',sans-serif;font-size:26px;font-weight:800; }
+    .page-header .date { color:var(--muted);font-size:14px; }
+    .header-actions { display:flex;align-items:center;gap:12px; }
+    .btn-sm {
+      padding:9px 18px;border-radius:9px;border:1px solid var(--border);
+      background:rgba(255,255,255,0.05);color:var(--text);font-family:'DM Sans',sans-serif;
+      font-size:13px;cursor:pointer;transition:all 0.2s;display:flex;align-items:center;gap:6px;
+    }
+    .btn-sm:hover { background:rgba(255,255,255,0.1); }
+    .btn-sm.primary { background:var(--indigo);border-color:var(--indigo);color:#fff; box-shadow:0 4px 14px rgba(92,110,248,0.35); }
+
+    /* ── Stat cards ── */
+    .stats-grid { display:grid;grid-template-columns:repeat(4,1fr);gap:18px;margin-bottom:28px; }
+    .stat-card {
+      background:var(--card);border:1px solid var(--border);border-radius:16px;
+      padding:22px;transition:transform 0.2s;cursor:default;
+    }
+    .stat-card:hover { transform:translateY(-3px); }
+    .stat-top { display:flex;align-items:center;justify-content:space-between;margin-bottom:14px; }
+    .stat-label { font-size:13px;color:var(--muted); }
+    .stat-badge {
+      width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:17px;
+    }
+    .badge-teal  { background:rgba(0,212,180,0.15); }
+    .badge-indigo{ background:rgba(92,110,248,0.15); }
+    .badge-coral { background:rgba(255,107,107,0.15); }
+    .badge-amber { background:rgba(245,158,11,0.15); }
+    .stat-value { font-family:'Syne',sans-serif;font-size:28px;font-weight:800;margin-bottom:4px; }
+    .stat-sub { font-size:12px;color:var(--muted); }
+    .stat-change { font-size:12px;display:inline-flex;align-items:center;gap:4px;padding:3px 8px;border-radius:6px; }
+    .change-up   { background:rgba(16,185,129,0.1);color:var(--green); }
+    .change-down { background:rgba(255,107,107,0.1);color:var(--coral); }
+
+    /* ── Grid row ── */
+    .grid-2 { display:grid;grid-template-columns:1.6fr 1fr;gap:18px;margin-bottom:28px; }
+    .grid-3 { display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-bottom:28px; }
+
+    .card {
+      background:var(--card);border:1px solid var(--border);border-radius:16px;padding:24px;
+    }
+    .card-header { display:flex;align-items:center;justify-content:space-between;margin-bottom:20px; }
+    .card-title { font-family:'Syne',sans-serif;font-size:16px;font-weight:700; }
+    .card-sub { font-size:12px;color:var(--muted); }
+
+    /* ── App list ── */
+    .app-row {
+      display:flex;align-items:center;gap:12px;padding:12px 0;
+      border-bottom:1px solid var(--border);
+    }
+    .app-row:last-child { border-bottom:none; }
+    .app-icon { width:40px;height:40px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0; }
+    .app-info { flex:1;min-width:0; }
+    .app-name { font-size:14px;font-weight:600;margin-bottom:4px; }
+    .app-meta { font-size:12px;color:var(--muted); }
+    .app-time { font-family:'Syne',sans-serif;font-size:14px;font-weight:700;margin-right:12px;text-align:right; }
+    .progress-wrap { width:80px; }
+    .progress-bar { height:5px;background:rgba(255,255,255,0.08);border-radius:3px;overflow:hidden; }
+    .progress-fill { height:100%;border-radius:3px;transition:width 1s ease; }
+
+    /* ── Notification panel ── */
+    .notif-item {
+      display:flex;align-items:flex-start;gap:12px;padding:12px 0;
+      border-bottom:1px solid var(--border);
+    }
+    .notif-item:last-child { border-bottom:none; }
+    .notif-dot { width:10px;height:10px;border-radius:50%;flex-shrink:0;margin-top:4px; }
+    .notif-text { font-size:13px;color:var(--text);margin-bottom:3px; }
+    .notif-time { font-size:11px;color:var(--muted); }
+
+    /* ── Chart container ── */
+    .chart-wrap { position:relative;height:200px; }
+
+    /* ── Live pulse ── */
+    .live-dot { width:8px;height:8px;border-radius:50%;background:var(--green);display:inline-block;margin-right:6px;animation:pulse 1.5s infinite; }
+    @keyframes pulse { 0%,100%{ box-shadow:0 0 0 0 rgba(16,185,129,0.5); } 50%{ box-shadow:0 0 0 6px transparent; } }
+
+    /* ── Responsive ── */
+    @media(max-width:1200px){
+      .stats-grid { grid-template-columns:repeat(2,1fr); }
+      .grid-2 { grid-template-columns:1fr; }
+    }
+    @media(max-width:900px){
+      .sidebar { width:64px;padding:20px 12px; }
+      .sidebar .brand-name,.sidebar .nav-item span,.sidebar .user-info { display:none; }
+      .main { margin-left:64px;padding:20px; }
+    }
+    @media(max-width:600px){
+      .stats-grid { grid-template-columns:1fr 1fr; }
+      .grid-3 { grid-template-columns:1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── Sidebar ── -->
+<aside class="sidebar">
+  <div class="brand"><div class="brand-icon">⏱</div><div class="brand-name">ScreenGuard</div></div>
+  <nav class="nav">
+    <a class="nav-item active" href="dashboard.html"><span class="nav-icon">📊</span><span>Dashboard</span></a>
+    <a class="nav-item " href="apps.html"><span class="nav-icon">📱</span><span>App Usage</span></a>
+    <a class="nav-item " href="limits.html"><span class="nav-icon">⏳</span><span>Time Limits</span></a>
+    <a class="nav-item " href="stats.html"><span class="nav-icon">📈</span><span>Statistics</span></a>
+    <a class="nav-item " href="notifications.html"><span class="nav-icon">🔔</span><span>Alerts</span></a>
+    <a class="nav-item " href="focus.html"><span class="nav-icon">🎯</span><span>Focus Mode</span></a>
+    <div class="nav-divider"></div>
+    <a class="nav-item " href="about.html"><span class="nav-icon">ℹ️</span><span>About</span></a>
+    <a class="nav-item" href="login.html"><span class="nav-icon">🚪</span><span>Logout</span></a>
+  </nav>
+  <div class="sidebar-bottom">
+    <button class="theme-toggle-btn" onclick="SG.toggleTheme()">☀️ Light Mode</button>
+    <div class="user-card"><div class="avatar">A</div><div class="user-info"><div class="name">Admin</div><div class="role">Administrator</div></div></div>
+  </div>
+</aside>
+
+<!-- ── Main ── -->
+<main class="main">
+  <div class="page-header">
+    <div>
+      <h1>Dashboard</h1>
+      <div class="date"><span class="live-dot"></span>Live — <span id="liveTime"></span></div>
+    </div>
+    <div class="header-actions">
+      <button class="btn-sm">📥 Export</button>
+      <button class="btn-sm primary" onclick="window.location.href='limits.html'">+ Set Limit</button>
+    </div>
+  </div>
+
+  <!-- Stats -->
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-top"><span class="stat-label">Total Screen Time</span><div class="stat-badge badge-teal">⏱</div></div>
+      <div class="stat-value" id="totalTime">6h 42m</div>
+      <div class="stat-sub"><span class="stat-change change-down">↑ 12% vs yesterday</span></div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-top"><span class="stat-label">Apps Monitored</span><div class="stat-badge badge-indigo">📱</div></div>
+      <div class="stat-value">12</div>
+      <div class="stat-sub"><span class="stat-change change-up">↑ 3 new this week</span></div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-top"><span class="stat-label">Limits Exceeded</span><div class="stat-badge badge-coral">⚠️</div></div>
+      <div class="stat-value" id="limitCount">3</div>
+      <div class="stat-sub"><span class="stat-change change-down">↑ 1 more than yesterday</span></div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-top"><span class="stat-label">Focus Score</span><div class="stat-badge badge-amber">🎯</div></div>
+      <div class="stat-value">72%</div>
+      <div class="stat-sub"><span class="stat-change change-up">↑ 5% improvement</span></div>
+    </div>
+  </div>
+
+  <!-- Charts row -->
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-header">
+        <div><div class="card-title">Today's Usage</div><div class="card-sub">Hourly breakdown</div></div>
+        <select class="btn-sm" id="chartFilter" onchange="updateHourlyChart()" style="cursor:pointer">
+          <option>All Apps</option>
+          <option>Instagram</option>
+          <option>YouTube</option>
+          <option>Chrome</option>
+        </select>
+      </div>
+      <div class="chart-wrap"><canvas id="hourlyChart"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-header">
+        <div><div class="card-title">Usage Split</div><div class="card-sub">By category</div></div>
+      </div>
+      <div class="chart-wrap"><canvas id="pieChart"></canvas></div>
+    </div>
+  </div>
+
+  <!-- App list + Notifications -->
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-header">
+        <div><div class="card-title">Top Apps Today</div><div class="card-sub">Usage vs limit</div></div>
+        <a href="apps.html" class="btn-sm">View All →</a>
+      </div>
+      <div id="appList"></div>
+    </div>
+    <div class="card">
+      <div class="card-header">
+        <div><div class="card-title">Recent Alerts</div><div class="card-sub">Over-limit notifications</div></div>
+        <a href="notifications.html" class="btn-sm">All →</a>
+      </div>
+      <div id="notifList"></div>
+    </div>
+  </div>
+</main>
+
+<script>
+/* ── Live clock ── */
+function updateClock(){
+  document.getElementById('liveTime').textContent = new Date().toLocaleTimeString();
+}
+setInterval(updateClock, 1000); updateClock();
+
+/* ── App data ── */
+const apps = [
+  { name:'Instagram', icon:'📸', color:'#e1306c', used:150, limit:120, cat:'Social' },
+  { name:'YouTube',   icon:'▶️',  color:'#ff0000', used:90,  limit:60,  cat:'Video' },
+  { name:'Chrome',    icon:'🌐', color:'#4285f4', used:75,  limit:180, cat:'Browser' },
+  { name:'WhatsApp',  icon:'💬', color:'#25d366', used:45,  limit:90,  cat:'Social' },
+  { name:'TikTok',    icon:'🎵', color:'#010101', used:110, limit:60,  cat:'Video' },
+  { name:'Spotify',   icon:'🎧', color:'#1db954', used:30,  limit:120, cat:'Music' },
+];
+
+function renderApps(){
+  const container = document.getElementById('appList');
+  container.innerHTML = apps.slice(0,5).map(a => {
+    const pct = Math.min((a.used / a.limit)*100, 100);
+    const over = a.used > a.limit;
+    const fillColor = over ? '#ff6b6b' : (pct > 70 ? '#f59e0b' : '#00d4b4');
+    const usedStr = `${Math.floor(a.used/60)}h ${a.used%60}m`;
+    return `<div class="app-row">
+      <div class="app-icon" style="background:${a.color}22">${a.icon}</div>
+      <div class="app-info">
+        <div class="app-name">${a.name} ${over ? '<span style="color:#ff6b6b;font-size:11px">⚠ Over limit</span>' : ''}</div>
+        <div class="app-meta">${a.cat}</div>
+      </div>
+      <div class="app-time">${usedStr}</div>
+      <div class="progress-wrap">
+        <div class="progress-bar"><div class="progress-fill" style="width:${pct}%;background:${fillColor}"></div></div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+/* ── Notifications ── */
+const notifs = [
+  { text:'Instagram exceeded 2h limit by 30min', time:'2 mins ago', color:'#ff6b6b' },
+  { text:'TikTok limit reached (1h)', time:'18 mins ago', color:'#f59e0b' },
+  { text:'YouTube approaching limit — 5 min left', time:'1 hour ago', color:'#f59e0b' },
+  { text:'Daily screen time goal exceeded (6h)', time:'2 hours ago', color:'#ff6b6b' },
+  { text:'Focus session completed ✓', time:'4 hours ago', color:'#10b981' },
+];
+
+function renderNotifs(){
+  document.getElementById('notifList').innerHTML = notifs.map(n =>
+    `<div class="notif-item">
+      <div class="notif-dot" style="background:${n.color}"></div>
+      <div><div class="notif-text">${n.text}</div><div class="notif-time">${n.time}</div></div>
+    </div>`
+  ).join('');
+}
+
+/* ── Hourly chart ── */
+const hourlyData = {
+  'All Apps': [10,5,8,15,30,45,60,75,80,65,50,45,70,85,90,80,70,65,60,55,45,35,25,15],
+  'Instagram': [0,0,0,0,5,10,20,30,25,15,10,5,15,25,30,25,20,15,10,5,5,0,0,0],
+  'YouTube':   [0,0,0,0,0,5,10,15,20,10,5,10,15,20,25,20,15,10,5,5,0,0,0,0],
+  'Chrome':    [0,0,0,5,10,15,20,20,25,30,25,20,25,30,25,20,20,25,30,25,20,15,10,5],
+};
+const hours = Array.from({length:24},(_,i)=>`${i}:00`);
+let hChart;
+
+function buildHourlyChart(){
+  const ctx = document.getElementById('hourlyChart').getContext('2d');
+  hChart = new Chart(ctx,{
+    type:'bar',
+    data:{
+      labels:hours,
+      datasets:[{
+        label:'Minutes',
+        data:hourlyData['All Apps'],
+        backgroundColor:'rgba(92,110,248,0.5)',
+        borderColor:'#5c6ef8',
+        borderWidth:1,
+        borderRadius:4,
+      }]
+    },
+    options:{
+      responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false}},
+      scales:{
+        x:{ticks:{color:'#8892b0',font:{size:10},maxTicksLimit:12},grid:{color:'rgba(255,255,255,0.04)'}},
+        y:{ticks:{color:'#8892b0',font:{size:10}},grid:{color:'rgba(255,255,255,0.06)'}}
+      }
+    }
+  });
+}
+
+function updateHourlyChart(){
+  const sel = document.getElementById('chartFilter').value;
+  hChart.data.datasets[0].data = hourlyData[sel] || hourlyData['All Apps'];
+  hChart.update();
+}
+
+/* ── Pie chart ── */
+function buildPieChart(){
+  const ctx = document.getElementById('pieChart').getContext('2d');
+  new Chart(ctx,{
+    type:'doughnut',
+    data:{
+      labels:['Social','Video','Browser','Music','Other'],
+      datasets:[{
+        data:[32,26,20,10,12],
+        backgroundColor:['#5c6ef8','#ff6b6b','#00d4b4','#f59e0b','#8892b0'],
+        borderWidth:0,hoverOffset:6
+      }]
+    },
+    options:{
+      responsive:true,maintainAspectRatio:false,
+      plugins:{
+        legend:{position:'bottom',labels:{color:'#8892b0',boxWidth:10,padding:14,font:{size:12}}}
+      },
+      cutout:'65%'
+    }
+  });
+}
+
+/* ── Live usage ticker ── */
+let totalMins = 402;
+setInterval(()=>{
+  totalMins++;
+  const h = Math.floor(totalMins/60), m = totalMins%60;
+  document.getElementById('totalTime').textContent = `${h}h ${m}m`;
+}, 10000);
+
+buildHourlyChart();
+buildPieChart();
+renderApps();
+renderNotifs();
+</script>
+</body>
+</html>
